@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F50F4200E6BB800F1BE3C /* main.swift */; };
+		AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,10 +26,20 @@
 /* Begin PBXFileReference section */
 		AD3F50F1200E6BB700F1BE3C /* Tweegee */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Tweegee; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD3F50F4200E6BB800F1BE3C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
+		AD3F50FF200E6BFD00F1BE3C /* TweegeeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TweegeeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweegeeTests.swift; sourceTree = "<group>"; };
+		AD3F5103200E6BFD00F1BE3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		AD3F50EE200E6BB700F1BE3C /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AD3F50FC200E6BFD00F1BE3C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -42,6 +53,7 @@
 			isa = PBXGroup;
 			children = (
 				AD3F50F3200E6BB700F1BE3C /* Tweegee */,
+				AD3F5100200E6BFD00F1BE3C /* TweegeeTests */,
 				AD3F50F2200E6BB700F1BE3C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +62,7 @@
 			isa = PBXGroup;
 			children = (
 				AD3F50F1200E6BB700F1BE3C /* Tweegee */,
+				AD3F50FF200E6BFD00F1BE3C /* TweegeeTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -60,6 +73,15 @@
 				AD3F50F4200E6BB800F1BE3C /* main.swift */,
 			);
 			path = Tweegee;
+			sourceTree = "<group>";
+		};
+		AD3F5100200E6BFD00F1BE3C /* TweegeeTests */ = {
+			isa = PBXGroup;
+			children = (
+				AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */,
+				AD3F5103200E6BFD00F1BE3C /* Info.plist */,
+			);
+			path = TweegeeTests;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -82,6 +104,23 @@
 			productReference = AD3F50F1200E6BB700F1BE3C /* Tweegee */;
 			productType = "com.apple.product-type.tool";
 		};
+		AD3F50FE200E6BFD00F1BE3C /* TweegeeTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = AD3F5104200E6BFD00F1BE3C /* Build configuration list for PBXNativeTarget "TweegeeTests" */;
+			buildPhases = (
+				AD3F50FB200E6BFD00F1BE3C /* Sources */,
+				AD3F50FC200E6BFD00F1BE3C /* Frameworks */,
+				AD3F50FD200E6BFD00F1BE3C /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = TweegeeTests;
+			productName = TweegeeTests;
+			productReference = AD3F50FF200E6BFD00F1BE3C /* TweegeeTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -93,6 +132,10 @@
 				ORGANIZATIONNAME = "Carter Thaxton";
 				TargetAttributes = {
 					AD3F50F0200E6BB700F1BE3C = {
+						CreatedOnToolsVersion = 9.2;
+						ProvisioningStyle = Automatic;
+					};
+					AD3F50FE200E6BFD00F1BE3C = {
 						CreatedOnToolsVersion = 9.2;
 						ProvisioningStyle = Automatic;
 					};
@@ -111,9 +154,20 @@
 			projectRoot = "";
 			targets = (
 				AD3F50F0200E6BB700F1BE3C /* Tweegee */,
+				AD3F50FE200E6BFD00F1BE3C /* TweegeeTests */,
 			);
 		};
 /* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		AD3F50FD200E6BFD00F1BE3C /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
 		AD3F50ED200E6BB700F1BE3C /* Sources */ = {
@@ -121,6 +175,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		AD3F50FB200E6BFD00F1BE3C /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -253,6 +315,34 @@
 			};
 			name = Release;
 		};
+		AD3F5105200E6BFD00F1BE3C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JCW23UJPJQ;
+				INFOPLIST_FILE = TweegeeTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TweegeeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Debug;
+		};
+		AD3F5106200E6BFD00F1BE3C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				COMBINE_HIDPI_IMAGES = YES;
+				DEVELOPMENT_TEAM = JCW23UJPJQ;
+				INFOPLIST_FILE = TweegeeTests/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
+				PRODUCT_BUNDLE_IDENTIFIER = com.example.TweegeeTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_VERSION = 4.0;
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -270,6 +360,15 @@
 			buildConfigurations = (
 				AD3F50F9200E6BB800F1BE3C /* Debug */,
 				AD3F50FA200E6BB800F1BE3C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		AD3F5104200E6BFD00F1BE3C /* Build configuration list for PBXNativeTarget "TweegeeTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				AD3F5105200E6BFD00F1BE3C /* Debug */,
+				AD3F5106200E6BFD00F1BE3C /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
