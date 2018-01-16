@@ -9,6 +9,11 @@
 /* Begin PBXBuildFile section */
 		AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F50F4200E6BB800F1BE3C /* main.swift */; };
 		AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */; };
+		AD3F5124200E871B00F1BE3C /* Commander.a in Frameworks */ = {isa = PBXBuildFile; fileRef = AD3F5123200E871A00F1BE3C /* Commander.a */; };
+		AD3F512A200E8FF200F1BE3C /* Lifeline.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F5129200E8FF200F1BE3C /* Lifeline.tw2 */; };
+		AD3F512C200E900400F1BE3C /* Playlist.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512B200E900400F1BE3C /* Playlist.tw2 */; };
+		AD3F512E200E905700F1BE3C /* TestStory.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512D200E905700F1BE3C /* TestStory.tw2 */; };
+		AD3F5130200E906C00F1BE3C /* LLHTI.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512F200E906B00F1BE3C /* LLHTI.tw2 */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -24,11 +29,20 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		AD3F50F1200E6BB700F1BE3C /* Tweegee */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = Tweegee; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD3F50F1200E6BB700F1BE3C /* tweegee */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tweegee; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD3F50F4200E6BB800F1BE3C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		AD3F50FF200E6BFD00F1BE3C /* TweegeeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TweegeeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweegeeTests.swift; sourceTree = "<group>"; };
 		AD3F5103200E6BFD00F1BE3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		AD3F511F200E7EF900F1BE3C /* Commander.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = Commander.framework; sourceTree = BUILT_PRODUCTS_DIR; };
+		AD3F5120200E86B300F1BE3C /* Commander.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; name = Commander.a; path = "../../swift/Commander/.build/x86_64-apple-macosx10.10/debug/Commander.a"; sourceTree = "<group>"; };
+		AD3F5123200E871A00F1BE3C /* Commander.a */ = {isa = PBXFileReference; lastKnownFileType = archive.ar; path = Commander.a; sourceTree = "<group>"; };
+		AD3F5125200E872700F1BE3C /* Commander.swiftdoc */ = {isa = PBXFileReference; lastKnownFileType = file; path = Commander.swiftdoc; sourceTree = "<group>"; };
+		AD3F5126200E872700F1BE3C /* Commander.swiftmodule */ = {isa = PBXFileReference; lastKnownFileType = file; path = Commander.swiftmodule; sourceTree = "<group>"; };
+		AD3F5129200E8FF200F1BE3C /* Lifeline.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Lifeline.tw2; sourceTree = "<group>"; };
+		AD3F512B200E900400F1BE3C /* Playlist.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Playlist.tw2; sourceTree = "<group>"; };
+		AD3F512D200E905700F1BE3C /* TestStory.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TestStory.tw2; sourceTree = "<group>"; };
+		AD3F512F200E906B00F1BE3C /* LLHTI.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = LLHTI.tw2; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -36,6 +50,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD3F5124200E871B00F1BE3C /* Commander.a in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -52,16 +67,19 @@
 		AD3F50E8200E6BB700F1BE3C = {
 			isa = PBXGroup;
 			children = (
+				AD3F5128200E8FC900F1BE3C /* TweeFiles */,
+				AD3F5122200E870900F1BE3C /* Commander */,
 				AD3F50F3200E6BB700F1BE3C /* Tweegee */,
 				AD3F5100200E6BFD00F1BE3C /* TweegeeTests */,
 				AD3F50F2200E6BB700F1BE3C /* Products */,
+				AD3F511D200E7EF900F1BE3C /* Frameworks */,
 			);
 			sourceTree = "<group>";
 		};
 		AD3F50F2200E6BB700F1BE3C /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				AD3F50F1200E6BB700F1BE3C /* Tweegee */,
+				AD3F50F1200E6BB700F1BE3C /* tweegee */,
 				AD3F50FF200E6BFD00F1BE3C /* TweegeeTests.xctest */,
 			);
 			name = Products;
@@ -84,6 +102,36 @@
 			path = TweegeeTests;
 			sourceTree = "<group>";
 		};
+		AD3F511D200E7EF900F1BE3C /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				AD3F5120200E86B300F1BE3C /* Commander.a */,
+				AD3F511F200E7EF900F1BE3C /* Commander.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		AD3F5122200E870900F1BE3C /* Commander */ = {
+			isa = PBXGroup;
+			children = (
+				AD3F5123200E871A00F1BE3C /* Commander.a */,
+				AD3F5125200E872700F1BE3C /* Commander.swiftdoc */,
+				AD3F5126200E872700F1BE3C /* Commander.swiftmodule */,
+			);
+			path = Commander;
+			sourceTree = "<group>";
+		};
+		AD3F5128200E8FC900F1BE3C /* TweeFiles */ = {
+			isa = PBXGroup;
+			children = (
+				AD3F5129200E8FF200F1BE3C /* Lifeline.tw2 */,
+				AD3F512F200E906B00F1BE3C /* LLHTI.tw2 */,
+				AD3F512B200E900400F1BE3C /* Playlist.tw2 */,
+				AD3F512D200E905700F1BE3C /* TestStory.tw2 */,
+			);
+			path = TweeFiles;
+			sourceTree = "<group>";
+		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
@@ -101,7 +149,7 @@
 			);
 			name = Tweegee;
 			productName = Tweegee;
-			productReference = AD3F50F1200E6BB700F1BE3C /* Tweegee */;
+			productReference = AD3F50F1200E6BB700F1BE3C /* tweegee */;
 			productType = "com.apple.product-type.tool";
 		};
 		AD3F50FE200E6BFD00F1BE3C /* TweegeeTests */ = {
@@ -164,6 +212,10 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD3F512A200E8FF200F1BE3C /* Lifeline.tw2 in Resources */,
+				AD3F5130200E906C00F1BE3C /* LLHTI.tw2 in Resources */,
+				AD3F512E200E905700F1BE3C /* TestStory.tw2 in Resources */,
+				AD3F512C200E900400F1BE3C /* Playlist.tw2 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -242,6 +294,7 @@
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_INCLUDE_PATHS = "$(SOURCE_ROOT)/Commander";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = Debug;
@@ -291,6 +344,7 @@
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = macosx;
+				SWIFT_INCLUDE_PATHS = "$(SOURCE_ROOT)/Commander";
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
 			};
 			name = Release;
@@ -300,7 +354,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JCW23UJPJQ;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Commander",
+				);
+				PRODUCT_NAME = tweegee;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Debug;
@@ -310,7 +368,11 @@
 			buildSettings = {
 				CODE_SIGN_STYLE = Automatic;
 				DEVELOPMENT_TEAM = JCW23UJPJQ;
-				PRODUCT_NAME = "$(TARGET_NAME)";
+				LIBRARY_SEARCH_PATHS = (
+					"$(inherited)",
+					"$(PROJECT_DIR)/Commander",
+				);
+				PRODUCT_NAME = tweegee;
 				SWIFT_VERSION = 4.0;
 			};
 			name = Release;

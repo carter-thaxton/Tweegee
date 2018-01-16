@@ -1,0 +1,35 @@
+::StoryTitle
+Test Story
+
+::Start [start] <616,302>
+I'd like to test using Twine 2.
+
+You can visit the [[Next Phase]] or [[a weird tangent]].
+
+::Next Phase <759,301>
+This is the next phase.
+
+[[Another thing]]
+
+::Another thing <922,308>
+And then this other thing happens.
+[[See?]]
+
+::See? <1004,490>
+You win!
+
+[[The End]]
+
+::a weird tangent [weird tangent] <616,452>
+This veers off into a strange place.
+
+[[The End]]
+
+::The End [end] <421,622>
+Game over!
+
+Go back to [[Start]]
+
+::Twee2Settings [twee2]
+@story_start_name = 'Start'
+

@@ -7,6 +7,14 @@
 //
 
 import Foundation
+import Commander
 
-print("Hello, World!")
 
+command(
+    Argument<String>("filename", description: "Twee file to parse"),
+    Flag("useThis", default: true),
+    Option("count", default: 1, description: "The number of times to print.")
+) { filename, useThis, count in
+    print("Parsing twee file: \(filename)")
+    print("useThis: \(useThis)  count: \(count)")
+}.run()
