@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "AD3F50F0200E6BB700F1BE3C"
-               BuildableName = "Tweegee"
-               BlueprintName = "Tweegee"
+               BuildableName = "tweegee"
+               BlueprintName = "tweegee"
                ReferencedContainer = "container:Tweegee.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -44,8 +44,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AD3F50F0200E6BB700F1BE3C"
-            BuildableName = "Tweegee"
-            BlueprintName = "Tweegee"
+            BuildableName = "tweegee"
+            BlueprintName = "tweegee"
             ReferencedContainer = "container:Tweegee.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -68,8 +68,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AD3F50F0200E6BB700F1BE3C"
-            BuildableName = "Tweegee"
-            BlueprintName = "Tweegee"
+            BuildableName = "tweegee"
+            BlueprintName = "tweegee"
             ReferencedContainer = "container:Tweegee.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -93,8 +93,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "AD3F50F0200E6BB700F1BE3C"
-            BuildableName = "Tweegee"
-            BlueprintName = "Tweegee"
+            BuildableName = "tweegee"
+            BlueprintName = "tweegee"
             ReferencedContainer = "container:Tweegee.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>

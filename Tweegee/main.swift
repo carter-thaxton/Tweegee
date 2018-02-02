@@ -17,4 +17,15 @@ command(
 ) { filename, useThis, count in
     print("Parsing twee file: \(filename)")
     print("useThis: \(useThis)  count: \(count)")
+
+    let parser = TweeParser()
+    do {
+        try parser.parse(filename: filename) { (token) in
+            print(token)
+        }
+        print("HERE")
+    } catch {
+        print("Error while parsing \(filename): \(error)")
+    }
+    
 }.run()
