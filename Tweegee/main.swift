@@ -20,10 +20,12 @@ command(
 
     let parser = TweeParser()
     do {
+        var tokens = 0
         try parser.parse(filename: filename) { (token) in
-            print(token)
+            tokens += 1
+//            print(token)
         }
-        print("HERE")
+        print("Parsed: \(tokens) tokens")
     } catch {
         print("Error while parsing \(filename): \(error)")
     }

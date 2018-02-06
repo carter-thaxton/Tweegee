@@ -75,7 +75,7 @@
       </BuildableProductRunnable>
       <CommandLineArguments>
          <CommandLineArgument
-            argument = "$(SOURCE_ROOT)/TweeFiles/TestStory.tw2"
+            argument = "$(SOURCE_ROOT)/TweeFiles/Lifeline.tw2"
             isEnabled = "YES">
          </CommandLineArgument>
       </CommandLineArguments>

@@ -88,20 +88,20 @@ class TweeParser {
     
     func parse(string: String, block: @escaping (TweeToken) -> Void) throws {
         var err : Error? = nil
-        var currentLine : String? = nil
+        var errLine : String? = nil
         var lineNumber : Int = 1
         
         string.enumerateLines { line, stop in
             do {
-                currentLine = line
                 try self.parse(line: line, block: block)
                 lineNumber += 1
             } catch {
                 stop = true
                 err = error
+                errLine = line
             }
         }
-        if err != nil { throw TweeErrorLocation(error: err!, filename: nil, line: currentLine, lineNumber: lineNumber) }
+        if err != nil { throw TweeErrorLocation(error: err!, filename: nil, line: errLine, lineNumber: lineNumber) }
     }
 
     func parse(line: String, block handleToken: (TweeToken) -> Void) throws {
