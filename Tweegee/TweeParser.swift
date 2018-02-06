@@ -8,8 +8,16 @@
 
 import Foundation
 
+struct TweeErrorLocation : Error {
+    var error : Error
+    var filename : String?
+    var line : String?
+    var lineNumber : Int?
+}
+
 enum TweeError : Error {
-    case SyntaxError
+    case InvalidLinkSyntax
+    case InvalidMacroSyntax
 }
 
 enum TweeToken {
@@ -70,20 +78,30 @@ private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 class TweeParser {
     func parse(filename: String, block: @escaping (TweeToken) -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
-        try parse(string: str, block: block)
+        do {
+            try parse(string: str, block: block)
+        } catch var error as TweeErrorLocation {
+            error.filename = filename
+            throw error
+        }
     }
     
     func parse(string: String, block: @escaping (TweeToken) -> Void) throws {
         var err : Error? = nil
+        var currentLine : String? = nil
+        var lineNumber : Int = 1
+        
         string.enumerateLines { line, stop in
             do {
+                currentLine = line
                 try self.parse(line: line, block: block)
+                lineNumber += 1
             } catch {
                 stop = true
                 err = error
             }
         }
-        if err != nil { throw err! }
+        if err != nil { throw TweeErrorLocation(error: err!, filename: nil, line: currentLine, lineNumber: lineNumber) }
     }
 
     func parse(line: String, block handleToken: (TweeToken) -> Void) throws {
@@ -121,16 +139,17 @@ class TweeParser {
                             let link = try? s.scan(upTo: "]]")
                             if link != nil && link! != nil {
                                 // split on pipe, and trim each component
-                                let nameAndTitle = link!!.split(separator: "|", maxSplits: 1).map { $0.trimmingCharacters(in: .whitespaces) }
-                                if nameAndTitle.count >= 2 {
+                                let nameAndTitle = link!!.components(separatedBy: "|").map { $0.trimmingCharacters(in: .whitespaces) }
+                                if nameAndTitle.count == 2 {
                                     handleToken(.Link(name: nameAndTitle[1], title: nameAndTitle[0]))
-                                } else {
+                                } else if nameAndTitle.count == 1 {
                                     handleToken(.Link(name: nameAndTitle[0], title: nil))
+                                } else {
+                                    throw TweeError.InvalidLinkSyntax
                                 }
                                 s.match("]]")
                             } else {
-                                // Invalid link syntax
-                                throw TweeError.SyntaxError
+                                throw TweeError.InvalidLinkSyntax
                             }
                         } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
                             if !accText.isEmpty {
@@ -150,8 +169,7 @@ class TweeParser {
                                 }
                                 s.match(">>")
                             } else {
-                                // Invalid macro syntax
-                                throw TweeError.SyntaxError
+                                throw TweeError.InvalidMacroSyntax
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
                             if !accText.isEmpty {

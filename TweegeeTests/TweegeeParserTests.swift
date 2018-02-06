@@ -12,6 +12,7 @@ class TweegeeParserTests: XCTestCase {
 
     func testBasicParse() {
         checkParse(string: """
+            :: Start [tag tag2] <5,25>
             Some normal text
             Brackets, like I <3 U, and/or [this] thing
             Text [[link]] text
@@ -21,6 +22,7 @@ class TweegeeParserTests: XCTestCase {
             // Comment is ignored
         """,
         tokens: [
+            .Passage(name: "Start", tags: ["tag", "tag2"], position: CGPoint(x: 5, y: 25)),
             .Text("Some normal text"),
             .Newline,
             .Text("Brackets, like I <3 U, and/or [this] thing"),
@@ -48,10 +50,31 @@ class TweegeeParserTests: XCTestCase {
         ])
     }
     
-    func testMissingEnd() {
+    func testInvalidLink() {
         checkParseFails(string: """
             Missing [[Choice
-        """)
+        """,
+            expectedError: .InvalidLinkSyntax, lineNumber: 1
+        )
+    }
+    
+    func testInvalidLinkWords() {
+        checkParseFails(string: """
+            [[OK]]
+            [[OK|Also]]
+            [[Too|many|words]]
+        """,
+            expectedError: .InvalidLinkSyntax, lineNumber: 3
+        )
+    }
+
+    func testInvalidMacro() {
+        checkParseFails(string: """
+            <<if $ok>>
+            Missing <<if
+        """,
+            expectedError: .InvalidMacroSyntax, lineNumber: 2
+        )
     }
 
     
@@ -64,8 +87,21 @@ class TweegeeParserTests: XCTestCase {
         XCTAssertEqual(result, tokens)
     }
 
-    func checkParseFails(string: String) {
+    func checkParseFails(string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
         let p = TweeParser()
-        XCTAssertThrowsError(try p.parse(string: string) { _ in } )
+        do {
+            try p.parse(string: string) { _ in }
+        } catch let error as TweeErrorLocation {
+            if expectedError != nil {
+                XCTAssertEqual(error.error as! TweeError, expectedError!)
+            }
+            if lineNumber != nil {
+                XCTAssertEqual(error.lineNumber, lineNumber)
+            }
+            return
+        } catch {
+            XCTFail("Unexpected error thrown from parser")
+        }
+        XCTFail("Expected parser to throw an error")
     }
 }
