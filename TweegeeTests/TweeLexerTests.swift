@@ -1,5 +1,5 @@
 //
-//  TweegeeParserTests.swift
+//  TweeLexerTests.swift
 //  TweegeeTests
 //
 //  Created by Carter Thaxton on 1/18/18.
@@ -8,10 +8,10 @@
 
 import XCTest
 
-class TweegeeParserTests: XCTestCase {
+class TweeLexerTests: XCTestCase {
 
-    func testBasicParse() {
-        checkParse(string: """
+    func testBasicLexer() {
+        checkLexer(string: """
             :: Start [tag tag2] <5,25>
             Some normal text
             Brackets, like I <3 U, and/or [this] thing
@@ -51,7 +51,7 @@ class TweegeeParserTests: XCTestCase {
     }
     
     func testInvalidLink() {
-        checkParseFails(string: """
+        checkLexerFails(string: """
             Missing [[Choice
         """,
             expectedError: .InvalidLinkSyntax, lineNumber: 1
@@ -59,7 +59,7 @@ class TweegeeParserTests: XCTestCase {
     }
     
     func testInvalidLinkWords() {
-        checkParseFails(string: """
+        checkLexerFails(string: """
             [[OK]]
             [[OK|Also]]
             [[Too|many|words]]
@@ -69,7 +69,7 @@ class TweegeeParserTests: XCTestCase {
     }
 
     func testInvalidMacro() {
-        checkParseFails(string: """
+        checkLexerFails(string: """
             <<if $ok>>
             Missing <<if
         """,
@@ -80,17 +80,17 @@ class TweegeeParserTests: XCTestCase {
     
     // MARK: Helper methods
 
-    func checkParse(string: String, tokens: [TweeToken]) {
+    func checkLexer(string: String, tokens: [TweeToken]) {
         var result = [TweeToken]()
-        let p = TweeParser()
-        try! p.parse(string: string) { result.append($0) }
+        let p = TweeLexer()
+        try! p.lex(string: string) { result.append($0) }
         XCTAssertEqual(result, tokens)
     }
 
-    func checkParseFails(string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
-        let p = TweeParser()
+    func checkLexerFails(string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
+        let p = TweeLexer()
         do {
-            try p.parse(string: string) { _ in }
+            try p.lex(string: string) { _ in }
         } catch let error as TweeErrorLocation {
             if expectedError != nil {
                 XCTAssertEqual(error.error as! TweeError, expectedError!)
@@ -100,8 +100,8 @@ class TweegeeParserTests: XCTestCase {
             }
             return
         } catch {
-            XCTFail("Unexpected error thrown from parser")
+            XCTFail("Unexpected error thrown from lexer")
         }
-        XCTFail("Expected parser to throw an error")
+        XCTFail("Expected lexer to throw an error")
     }
 }

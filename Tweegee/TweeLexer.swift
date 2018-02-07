@@ -1,5 +1,5 @@
 //
-//  TweeParser.swift
+//  TweeLexer.swift
 //  Tweegee
 //
 //  Created by Carter Thaxton on 1/16/18.
@@ -75,25 +75,25 @@ private let passageHeaderRegex = try! NSRegularExpression(pattern:
 private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 
 
-class TweeParser {
-    func parse(filename: String, block: @escaping (TweeToken) -> Void) throws {
+class TweeLexer {
+    func lex(filename: String, block: @escaping (TweeToken) -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
         do {
-            try parse(string: str, block: block)
+            try lex(string: str, block: block)
         } catch var error as TweeErrorLocation {
             error.filename = filename
             throw error
         }
     }
     
-    func parse(string: String, block: @escaping (TweeToken) -> Void) throws {
+    func lex(string: String, block: @escaping (TweeToken) -> Void) throws {
         var err : Error? = nil
         var errLine : String? = nil
         var lineNumber : Int = 1
         
         string.enumerateLines { line, stop in
             do {
-                try self.parse(line: line, block: block)
+                try self.lex(line: line, block: block)
                 lineNumber += 1
             } catch {
                 stop = true
@@ -104,7 +104,7 @@ class TweeParser {
         if err != nil { throw TweeErrorLocation(error: err!, filename: nil, line: errLine, lineNumber: lineNumber) }
     }
 
-    func parse(line: String, block handleToken: (TweeToken) -> Void) throws {
+    func lex(line: String, block handleToken: (TweeToken) -> Void) throws {
         if let matches = line.match(regex: passageHeaderRegex) {
             let name = matches[1]!.trimmingCharacters(in: .whitespaces)
             let tags = matches[2]

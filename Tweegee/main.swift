@@ -15,19 +15,19 @@ command(
     Flag("useThis", default: true),
     Option("count", default: 1, description: "The number of times to print.")
 ) { filename, useThis, count in
-    print("Parsing twee file: \(filename)")
+    print("Lexing twee file: \(filename)")
     print("useThis: \(useThis)  count: \(count)")
 
-    let parser = TweeParser()
+    let lexer = TweeLexer()
     do {
         var tokens = 0
-        try parser.parse(filename: filename) { (token) in
+        try lexer.lex(filename: filename) { (token) in
             tokens += 1
 //            print(token)
         }
-        print("Parsed: \(tokens) tokens")
+        print("Lexed \(tokens) tokens")
     } catch {
-        print("Error while parsing \(filename): \(error)")
+        print("Error while lexing \(filename): \(error)")
     }
     
 }.run()
