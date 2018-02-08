@@ -8,6 +8,25 @@
 
 import Foundation
 
+// Unfortunate additions to workaround interop on Linux
+public extension NSString {
+    #if os(OSX)
+    public func bridge() -> String {
+        return self as String
+    }
+    #endif
+}
+
+public extension String {
+    #if os(OSX)
+    public func bridge() -> NSString {
+        return self as NSString
+    }
+    #endif
+}
+
+
+
 fileprivate var expressions = [String: NSRegularExpression]()
 
 extension String {
@@ -32,7 +51,7 @@ extension String {
         for i in 0...match.numberOfRanges - 1 {
             let capturedGroupIndex = match.range(at: i)
             if capturedGroupIndex.length > 0 {
-                let matchedString = (self as NSString).substring(with: capturedGroupIndex)
+                let matchedString = (self.bridge() as NSString).substring(with: capturedGroupIndex)
                 results.append(matchedString)
             } else {
                 results.append(nil)
