@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import Commander
 
 
 func runLexOnly(filename: String) {
@@ -39,18 +38,36 @@ func runParse(filename: String) {
     }
 }
 
+func showHelp() -> Never {
+    print("""
+        Usage: tweegee [--lexOnly] <filename>
+    """)
+    exit(1)
+}
 
-command(
-    Argument<String>("filename", description: "Twee file to parse"),
-    Flag("lexOnly", default: false, description: "Only lex and do not parse the file")
-//    Option("count", default: 1, description: "The number of times to print.")
-) { filename, lexOnly in
+var lexOnly = false
+var filename : String?
 
-    if lexOnly {
-        runLexOnly(filename: filename)
+for arg in CommandLine.arguments {
+    if arg.starts(with: "-") {
+        switch arg {
+        case "--lexOnly":
+            lexOnly = true
+        default:
+            showHelp()
+        }
     } else {
-        runParse(filename: filename)
+        filename = arg
     }
-    
-}.run()
+}
+
+guard let filename = filename else {
+    showHelp()
+}
+
+if lexOnly {
+    runLexOnly(filename: filename)
+} else {
+    runParse(filename: filename)
+}
 
