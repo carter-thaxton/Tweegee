@@ -9,17 +9,17 @@
 import Foundation
 
 // Unfortunate additions to workaround interop on Linux
-public extension NSString {
-    #if os(OSX)
-    public func bridge() -> String {
+extension NSString {
+    #if !os(Linux)
+    func bridge() -> String {
         return self as String
     }
     #endif
 }
 
-public extension String {
-    #if os(OSX)
-    public func bridge() -> NSString {
+extension String {
+    #if !os(Linux)
+    func bridge() -> NSString {
         return self as NSString
     }
     #endif
@@ -51,7 +51,7 @@ extension String {
         for i in 0...match.numberOfRanges - 1 {
             let capturedGroupIndex = match.range(at: i)
             if capturedGroupIndex.length > 0 {
-                let matchedString = (self.bridge() as NSString).substring(with: capturedGroupIndex)
+                let matchedString = self.bridge().substring(with: capturedGroupIndex)
                 results.append(matchedString)
             } else {
                 results.append(nil)
