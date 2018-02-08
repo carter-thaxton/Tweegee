@@ -17,7 +17,7 @@ class TweeLexerTests: XCTestCase {
             Brackets, like I <3 U, and/or [this] thing
             Text [[link]] text
             <<set $i = 5>>
-            <<if $i > 0 >>I have <<$i>> items<<else>>No items<<endif>>
+            <<if $i > 0 >>I have <<$i>> items and costs <<3 * $i>> dollars<<else>>No items<<endif>>
             [[Choice 1|choice_1]] | [[ Choice 2 | choice_2 ]]
             // Comment is ignored
         """,
@@ -36,7 +36,9 @@ class TweeLexerTests: XCTestCase {
             .Macro(name: "if", expr: "$i > 0"),
             .Text("I have "),
             .Macro(name: nil, expr: "$i"),
-            .Text(" items"),
+            .Text(" items and costs "),
+            .Macro(name: nil, expr: "3 * $i"),
+            .Text(" dollars"),
             .Macro(name: "else", expr: nil),
             .Text("No items"),
             .Macro(name: "endif", expr: nil),
@@ -46,6 +48,59 @@ class TweeLexerTests: XCTestCase {
             .Link(name: "choice_2", title: "Choice 2"),
             .Newline,
             .Comment("Comment is ignored"),
+            .Newline,
+        ])
+    }
+    
+    func testWhitespace() {
+        checkLexer("""
+            ::Start
+            Some normal text
+            Text <<if true>>  two spaces  <<else>><<if true>>  initial space<<else>>trailing space  <<endif>>   <<endif>>
+            <<if true>>
+                Say "<<$text>>" and wave.
+            <<else>>
+                [[go_here]]
+            <<endif>>
+            Text // then a comment
+        """,
+        tokens: [
+            .Passage(name: "Start", tags: [], position: nil),
+            .Text("Some normal text"),
+            .Newline,
+            
+            .Text("Text "),
+            .Macro(name: "if", expr: "true"),
+            .Text("  two spaces  "),
+            .Macro(name: "else", expr: nil),
+            .Macro(name: "if", expr: "true"),
+            .Text("  initial space"),
+            .Macro(name: "else", expr: nil),
+            .Text("trailing space  "),
+            .Macro(name: "endif", expr: nil),
+            .Text("   "),
+            .Macro(name: "endif", expr: nil),
+            .Newline,
+            
+            .Macro(name: "if", expr: "true"),
+            .Newline,
+
+            .Text("Say \""),
+            .Macro(name: nil, expr: "$text"),
+            .Text("\" and wave."),
+            .Newline,
+            
+            .Macro(name: "else", expr: nil),
+            .Newline,
+            
+            .Link(name: "go_here", title: nil),
+            .Newline,
+
+            .Macro(name: "endif", expr: nil),
+            .Newline,
+
+            .Text("Text"),
+            .Comment("then a comment"),
             .Newline,
         ])
     }
@@ -71,7 +126,13 @@ class TweeLexerTests: XCTestCase {
         """, expectedError: .InvalidMacroSyntax, lineNumber: 2)
     }
 
-    
+    func testEmptyMacro() {
+        checkLexerFails("""
+            << >>
+        """, expectedError: .InvalidMacroSyntax, lineNumber: 1)
+    }
+
+
     // MARK: Helper methods
 
     func checkLexer(_ string: String, tokens: [TweeToken]) {

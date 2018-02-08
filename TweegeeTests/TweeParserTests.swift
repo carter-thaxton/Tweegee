@@ -10,7 +10,7 @@ import XCTest
 
 class TweeParserTests: XCTestCase {
     
-    func testParse() {
+    func testBasicParse() {
         let story = parse("""
             ::Passage1
             <<let $test = 5>>
@@ -25,6 +25,38 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(story.passages["Passage2"]!.location.lineNumber, 5)
         XCTAssertNil(story.passages["Passage1"]!.location.filename)
         XCTAssertNil(story.passages["Passage2"]!.location.filename)
+    }
+
+    func testNestedStatements() {
+        let story = parse("""
+            ::Passage1
+            <<let $test = 5>>
+            <<if $test is 5>>
+                Say this
+                <<if $test < 10>>
+                    <<if $test > 6>>Not this<<else>>Then this<<endif>>
+                    [[Passage2]]
+                <<else>>
+                    <<if $test > 6>>Not this either [[Passage3]]<<else>>Then this<<endif>>
+                    [[Passage4]]
+            <<else>>
+                [[Passage5]]
+            <<endif>>
+
+            ::Passage2
+            After nested if
+
+            ::Passage3
+            After nested else and if
+
+            ::Passage4
+            After nested else and fallthrough else
+
+            ::Passage5
+            After outer else
+        """)
+
+        XCTAssertEqual(story.passages.count, 5)
     }
 
     func testTextOutsidePassage() {

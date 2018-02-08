@@ -142,19 +142,27 @@ class TweeLexer {
                             let macro = try? s.scan(upTo: ">>")
                             if macro != nil && macro! != nil {
                                 let text = macro!!.trimmingCharacters(in: .whitespaces)
-                                let nameAndExpr = text.split(separator: " ", maxSplits: 1)
-                                if nameAndExpr.count >= 2 {
-                                    try handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
-                                } else if nameAndExpr[0].starts(with: "$") {
-                                    try handleToken(.Macro(name: nil, expr: String(nameAndExpr[0])), location)
+                                if text.isEmpty {
+                                    // empty macro, invalid
+                                    throw TweeErrorLocation(error: TweeError.InvalidMacroSyntax, location: location)
+                                } else if !CharacterSet.letters.contains(text.unicodeScalars.first!) {
+                                    // doesn't start with a letter, so it's a raw expression
+                                    try handleToken(.Macro(name: nil, expr: text), location)
                                 } else {
-                                    try handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
+                                    // starts with a latter, split on name and rest of expression
+                                    let nameAndExpr = text.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+                                    if nameAndExpr.count >= 2 {
+                                        try handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
+                                    } else {
+                                        try handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
+                                    }
                                 }
                                 s.match(">>")
                             } else {
                                 throw TweeErrorLocation(error: TweeError.InvalidMacroSyntax, location: location)
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
+                            accText = accText.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace
                             if !accText.isEmpty {
                                 try handleToken(.Text(accText), location)
                                 accText = ""
@@ -170,6 +178,7 @@ class TweeLexer {
                     }
                 }
                 
+                accText = accText.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace
                 if !accText.isEmpty {
                     try handleToken(.Text(accText), location)
                 }

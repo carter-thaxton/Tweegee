@@ -24,6 +24,7 @@ class TweeParser {
     }
 
     func handleToken(token: TweeToken, location: TweeLocation) throws {
+        print(token)
         func ensurePassage() throws {
             if currentPassage == nil {
                 throw TweeErrorLocation(error: TweeError.TextOutsidePassage, location: location)
