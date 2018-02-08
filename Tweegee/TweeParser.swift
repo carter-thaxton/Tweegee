@@ -24,13 +24,43 @@ class TweeParser {
     }
 
     func handleToken(token: TweeToken, location: TweeLocation) throws {
+        func ensurePassage() throws {
+            if currentPassage == nil {
+                throw TweeErrorLocation(error: TweeError.TextOutsidePassage, location: location)
+            }
+        }
+
         switch token {
+
         case .Passage(let name, let tags, let position):
-            let passage = TweePassage(location: location, name: name, position: position, tags: tags)
-            try story.addPassage(passage: passage)
-        default:
-            // TODO: implement the rest
+            currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
+            try story.addPassage(passage: currentPassage!)
+
+        case .Comment(let comment):
+            // ignore comments
+            _ = comment
             break
+
+        case .Newline:
+            // TODO: figure this out
+            break
+
+        case .Text(let text):
+            // TODO: handle this
+            _ = text
+            try ensurePassage()
+
+        case .Link(let name, let title):
+            // TODO: handle this
+            _ = name
+            _ = title
+            try ensurePassage()
+
+        case .Macro(let name, let expr):
+            // TODO: handle this
+            _ = name
+            _ = expr
+            try ensurePassage()
         }
     }
 }

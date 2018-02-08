@@ -12,6 +12,7 @@ enum TweeError : Error, Equatable {
     case InvalidLinkSyntax
     case InvalidMacroSyntax
     case DuplicatePassageName
+    case TextOutsidePassage
 }
 
 struct TweeErrorLocation : Error {

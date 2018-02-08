@@ -27,9 +27,34 @@ class TweeParserTests: XCTestCase {
         XCTAssertNil(story.passages["Passage2"]!.location.filename)
     }
 
+    func testTextOutsidePassage() {
+        checkParseFails("Some text", expectedError: TweeError.TextOutsidePassage, lineNumber: 1)
+    }
+    
+    
+    // MARK: Helper methods
+
     func parse(_ string : String) -> TweeStory {
-        let p = TweeParser()
-        return try! p.parse(string: string)
+        let parser = TweeParser()
+        return try! parser.parse(string: string)
+    }
+
+    func checkParseFails(_ string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
+        let parser = TweeParser()
+        do {
+            let _ = try parser.parse(string: string)
+        } catch let error as TweeErrorLocation {
+            if expectedError != nil {
+                XCTAssertEqual(error.error as! TweeError, expectedError!)
+            }
+            if lineNumber != nil {
+                XCTAssertEqual(error.location.lineNumber, lineNumber)
+            }
+            return
+        } catch {
+            XCTFail("Unexpected error thrown from parser")
+        }
+        XCTFail("Expected parser to throw an error")
     }
 
 }

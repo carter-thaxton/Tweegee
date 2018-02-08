@@ -11,7 +11,7 @@ import XCTest
 class TweeLexerTests: XCTestCase {
 
     func testBasicLexer() {
-        checkLexer(string: """
+        checkLexer("""
             :: Start [tag tag2] <5,25>
             Some normal text
             Brackets, like I <3 U, and/or [this] thing
@@ -51,46 +51,43 @@ class TweeLexerTests: XCTestCase {
     }
     
     func testInvalidLink() {
-        checkLexerFails(string: """
+        checkLexerFails("""
             Missing [[Choice
-        """,
-            expectedError: .InvalidLinkSyntax, lineNumber: 1
+        """, expectedError: .InvalidLinkSyntax, lineNumber: 1
         )
     }
     
     func testInvalidLinkWords() {
-        checkLexerFails(string: """
+        checkLexerFails("""
             [[OK]]
             [[OK|Also]]
             [[Too|many|words]]
-        """,
-            expectedError: .InvalidLinkSyntax, lineNumber: 3
+        """, expectedError: .InvalidLinkSyntax, lineNumber: 3
         )
     }
 
     func testInvalidMacro() {
-        checkLexerFails(string: """
+        checkLexerFails("""
             <<if $ok>>
             Missing <<if
-        """,
-            expectedError: .InvalidMacroSyntax, lineNumber: 2
+        """, expectedError: .InvalidMacroSyntax, lineNumber: 2
         )
     }
 
     
     // MARK: Helper methods
 
-    func checkLexer(string: String, tokens: [TweeToken]) {
+    func checkLexer(_ string: String, tokens: [TweeToken]) {
         var result = [TweeToken]()
-        let p = TweeLexer()
-        try! p.lex(string: string) { tok, loc in result.append(tok) }
+        let lexer = TweeLexer()
+        try! lexer.lex(string: string) { tok, _ in result.append(tok) }
         XCTAssertEqual(result, tokens)
     }
 
-    func checkLexerFails(string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
-        let p = TweeLexer()
+    func checkLexerFails(_ string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
+        let lexer = TweeLexer()
         do {
-            try p.lex(string: string) { _, _ in }
+            try lexer.lex(string: string) { _, _ in }
         } catch let error as TweeErrorLocation {
             if expectedError != nil {
                 XCTAssertEqual(error.error as! TweeError, expectedError!)
