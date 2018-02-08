@@ -22,6 +22,10 @@ extension String {
     func bridge() -> NSString {
         return self as NSString
     }
+    #else
+    func bridge() -> NSString {
+        return NSString(string: self)
+    }
     #endif
 }
 
