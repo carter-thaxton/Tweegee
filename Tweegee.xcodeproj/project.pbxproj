@@ -83,8 +83,8 @@
 			isa = PBXGroup;
 			children = (
 				AD3F5128200E8FC900F1BE3C /* TweeFiles */,
-				AD3F50F3200E6BB700F1BE3C /* Tweegee */,
-				AD3F5100200E6BFD00F1BE3C /* TweegeeTests */,
+				AD3F50F3200E6BB700F1BE3C /* Sources */,
+				AD3F5100200E6BFD00F1BE3C /* Tests */,
 				AD3F50F2200E6BB700F1BE3C /* Products */,
 			);
 			sourceTree = "<group>";
@@ -98,7 +98,7 @@
 			name = Products;
 			sourceTree = "<group>";
 		};
-		AD3F50F3200E6BB700F1BE3C /* Tweegee */ = {
+		AD3F50F3200E6BB700F1BE3C /* Sources */ = {
 			isa = PBXGroup;
 			children = (
 				AD3F50F4200E6BB800F1BE3C /* main.swift */,
@@ -109,10 +109,10 @@
 				AD3F5134200EA8C900F1BE3C /* StringMatch.swift */,
 				AD3F5137201042AC00F1BE3C /* StringScanner.swift */,
 			);
-			path = Tweegee;
+			path = Sources;
 			sourceTree = "<group>";
 		};
-		AD3F5100200E6BFD00F1BE3C /* TweegeeTests */ = {
+		AD3F5100200E6BFD00F1BE3C /* Tests */ = {
 			isa = PBXGroup;
 			children = (
 				AD3F513C202BC51D00F1BE3C /* TweeLexerTests.swift */,
@@ -120,7 +120,7 @@
 				AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */,
 				AD3F5103200E6BFD00F1BE3C /* Info.plist */,
 			);
-			path = TweegeeTests;
+			path = Tests;
 			sourceTree = "<group>";
 		};
 		AD3F5128200E8FC900F1BE3C /* TweeFiles */ = {
@@ -395,7 +395,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JCW23UJPJQ;
-				INFOPLIST_FILE = TweegeeTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.TweegeeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -410,7 +410,7 @@
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = JCW23UJPJQ;
-				INFOPLIST_FILE = TweegeeTests/Info.plist;
+				INFOPLIST_FILE = Tests/Info.plist;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/../Frameworks @loader_path/../Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = com.example.TweegeeTests;
 				PRODUCT_NAME = "$(TARGET_NAME)";
