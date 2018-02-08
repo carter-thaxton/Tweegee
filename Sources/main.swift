@@ -45,10 +45,12 @@ func showHelp() -> Never {
     exit(1)
 }
 
+
+// MARK: Parse command-line arguments
 var lexOnly = false
 var filename : String?
 
-for arg in CommandLine.arguments {
+for arg in CommandLine.arguments.dropFirst() {
     if arg.starts(with: "-") {
         switch arg {
         case "--lexOnly":
@@ -61,6 +63,8 @@ for arg in CommandLine.arguments {
     }
 }
 
+
+// MARK: Run command-line tool
 guard let filename = filename else {
     showHelp()
 }
