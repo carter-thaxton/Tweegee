@@ -10,24 +10,47 @@ import Foundation
 import Commander
 
 
-command(
-    Argument<String>("filename", description: "Twee file to parse"),
-    Flag("useThis", default: true),
-    Option("count", default: 1, description: "The number of times to print.")
-) { filename, useThis, count in
+func runLexOnly(filename: String) {
     print("Lexing twee file: \(filename)")
-    print("useThis: \(useThis)  count: \(count)")
-
+    
     let lexer = TweeLexer()
     do {
         var tokens = 0
-        try lexer.lex(filename: filename) { (token) in
+        try lexer.lex(filename: filename) { (token, location) in
             tokens += 1
-//            print(token)
+            //            print(token, location)
         }
         print("Lexed \(tokens) tokens")
     } catch {
         print("Error while lexing \(filename): \(error)")
     }
+}
+
+
+func runParse(filename: String) {
+    print("Parsing twee file: \(filename)")
+    
+    let parser = TweeParser()
+    do {
+        let story = try parser.parse(filename: filename)
+        print("Parsed \(story.passages.count) passages")
+    } catch {
+        print("Error while parsing \(filename): \(error)")
+    }
+}
+
+
+command(
+    Argument<String>("filename", description: "Twee file to parse"),
+    Flag("lexOnly", default: false, description: "Only lex and do not parse the file")
+//    Option("count", default: 1, description: "The number of times to print.")
+) { filename, lexOnly in
+
+    if lexOnly {
+        runLexOnly(filename: filename)
+    } else {
+        runParse(filename: filename)
+    }
     
 }.run()
+

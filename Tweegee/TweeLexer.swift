@@ -8,18 +8,6 @@
 
 import Foundation
 
-struct TweeErrorLocation : Error {
-    var error : Error
-    var filename : String?
-    var line : String?
-    var lineNumber : Int?
-}
-
-enum TweeError : Error {
-    case InvalidLinkSyntax
-    case InvalidMacroSyntax
-}
-
 enum TweeToken {
     case Newline
     case Passage(name: String, tags: [String], position: CGPoint?)
@@ -76,35 +64,30 @@ private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 
 
 class TweeLexer {
-    func lex(filename: String, block: @escaping (TweeToken) -> Void) throws {
+    func lex(filename: String, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
-        do {
-            try lex(string: str, block: block)
-        } catch var error as TweeErrorLocation {
-            error.filename = filename
-            throw error
-        }
+        try lex(string: str, filename: filename, block: block)
     }
-    
-    func lex(string: String, block: @escaping (TweeToken) -> Void) throws {
+
+    func lex(string: String, filename: String? = nil, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
         var err : Error? = nil
-        var errLine : String? = nil
-        var lineNumber : Int = 1
-        
+        var location = TweeLocation(filename: filename, line: nil, lineNumber: 1)
+
         string.enumerateLines { line, stop in
+            location.line = line
             do {
-                try self.lex(line: line, block: block)
-                lineNumber += 1
+                try self.lex(line: line, location: location, block: block)
+                location.lineNumber! += 1
             } catch {
                 stop = true
                 err = error
-                errLine = line
             }
         }
-        if err != nil { throw TweeErrorLocation(error: err!, filename: nil, line: errLine, lineNumber: lineNumber) }
+
+        if err != nil { throw err! }
     }
 
-    func lex(line: String, block handleToken: (TweeToken) -> Void) throws {
+    func lex(line: String, location: TweeLocation, block handleToken: (TweeToken, TweeLocation) throws -> Void) throws {
         if let matches = line.match(regex: passageHeaderRegex) {
             let name = matches[1]!.trimmingCharacters(in: .whitespaces)
             let tags = matches[2]
@@ -118,7 +101,7 @@ class TweeLexer {
                 pos = CGPoint(x: Int(posx!)!, y: Int(posy!)!)
             }
             
-            handleToken(.Passage(name: name, tags: tagsArr, position: pos))
+            try handleToken(.Passage(name: name, tags: tagsArr, position: pos), location)
         } else {
             let text = line.trimmingCharacters(in: .whitespaces)
             if !text.isEmpty {
@@ -133,7 +116,7 @@ class TweeLexer {
                     if !s.isAtEnd {
                         if s.match("[[") {  // link, e.g [[Choice|choice_1]]
                             if !accText.isEmpty {
-                                handleToken(.Text(accText))
+                                try handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             let link = try? s.scan(upTo: "]]")
@@ -141,19 +124,19 @@ class TweeLexer {
                                 // split on pipe, and trim each component
                                 let nameAndTitle = link!!.components(separatedBy: "|").map { $0.trimmingCharacters(in: .whitespaces) }
                                 if nameAndTitle.count == 2 {
-                                    handleToken(.Link(name: nameAndTitle[1], title: nameAndTitle[0]))
+                                    try handleToken(.Link(name: nameAndTitle[1], title: nameAndTitle[0]), location)
                                 } else if nameAndTitle.count == 1 {
-                                    handleToken(.Link(name: nameAndTitle[0], title: nil))
+                                    try handleToken(.Link(name: nameAndTitle[0], title: nil), location)
                                 } else {
-                                    throw TweeError.InvalidLinkSyntax
+                                    throw TweeErrorLocation(error: TweeError.InvalidLinkSyntax, location: location)
                                 }
                                 s.match("]]")
                             } else {
-                                throw TweeError.InvalidLinkSyntax
+                                throw TweeErrorLocation(error: TweeError.InvalidLinkSyntax, location: location)
                             }
                         } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
                             if !accText.isEmpty {
-                                handleToken(.Text(accText))
+                                try handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             let macro = try? s.scan(upTo: ">>")
@@ -161,24 +144,24 @@ class TweeLexer {
                                 let text = macro!!.trimmingCharacters(in: .whitespaces)
                                 let nameAndExpr = text.split(separator: " ", maxSplits: 1)
                                 if nameAndExpr.count >= 2 {
-                                    handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])))
+                                    try handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
                                 } else if nameAndExpr[0].starts(with: "$") {
-                                    handleToken(.Macro(name: nil, expr: String(nameAndExpr[0])))
+                                    try handleToken(.Macro(name: nil, expr: String(nameAndExpr[0])), location)
                                 } else {
-                                    handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil))
+                                    try handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
                                 }
                                 s.match(">>")
                             } else {
-                                throw TweeError.InvalidMacroSyntax
+                                throw TweeErrorLocation(error: TweeError.InvalidMacroSyntax, location: location)
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
                             if !accText.isEmpty {
-                                handleToken(.Text(accText))
+                                try handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             s.match("//")
                             let comment = s.remainder.trimmingCharacters(in: .whitespaces)
-                            handleToken(.Comment(comment))
+                            try handleToken(.Comment(comment), location)
                             s.peekAtEnd()
                         } else {
                             try! s.back()
@@ -188,10 +171,10 @@ class TweeLexer {
                 }
                 
                 if !accText.isEmpty {
-                    handleToken(.Text(accText))
+                    try handleToken(.Text(accText), location)
                 }
             }
-            handleToken(.Newline)
+            try handleToken(.Newline, location)
         }
     }
 }

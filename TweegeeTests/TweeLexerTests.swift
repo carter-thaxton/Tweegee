@@ -83,20 +83,20 @@ class TweeLexerTests: XCTestCase {
     func checkLexer(string: String, tokens: [TweeToken]) {
         var result = [TweeToken]()
         let p = TweeLexer()
-        try! p.lex(string: string) { result.append($0) }
+        try! p.lex(string: string) { tok, loc in result.append(tok) }
         XCTAssertEqual(result, tokens)
     }
 
     func checkLexerFails(string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
         let p = TweeLexer()
         do {
-            try p.lex(string: string) { _ in }
+            try p.lex(string: string) { _, _ in }
         } catch let error as TweeErrorLocation {
             if expectedError != nil {
                 XCTAssertEqual(error.error as! TweeError, expectedError!)
             }
             if lineNumber != nil {
-                XCTAssertEqual(error.lineNumber, lineNumber)
+                XCTAssertEqual(error.location.lineNumber, lineNumber)
             }
             return
         } catch {

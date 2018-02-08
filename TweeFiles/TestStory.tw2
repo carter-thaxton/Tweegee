@@ -3,13 +3,13 @@ Test Story
 
 ::Start [start begin] <616,302>
 I'd like to test using Twine 2.
-[some text in brackets]
 i <8 u
+[some text in brackets]
 
 Make a choice:
-[[Next Phase]] | [[a weird tangent]]
+[[Do this next|NextPhase]] | [[a weird tangent]]
 
-::Next Phase <759,301>
+::NextPhase <759,301>
 This is the next phase.
 [[Another thing]]
 
