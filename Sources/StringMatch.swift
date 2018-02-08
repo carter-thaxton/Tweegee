@@ -18,17 +18,14 @@ extension NSString {
 }
 
 extension String {
-    #if !os(Linux)
     func bridge() -> NSString {
+        #if !os(Linux)
         return self as NSString
-    }
-    #else
-    func bridge() -> NSString {
+        #else
         return NSString(string: self)
+        #endif
     }
-    #endif
 }
-
 
 
 fileprivate var expressions = [String: NSRegularExpression]()

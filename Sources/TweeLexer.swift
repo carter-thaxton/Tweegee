@@ -70,21 +70,13 @@ class TweeLexer {
     }
 
     func lex(string: String, filename: String? = nil, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
-        var err : Error? = nil
         var location = TweeLocation(filename: filename, line: nil, lineNumber: 1)
-
-        string.enumerateLines { line, stop in
+        let lines = string.components(separatedBy: .newlines)  // TODO: consider enumerateLines, which doesn't work on Linux
+        for line in lines {
             location.line = line
-            do {
-                try self.lex(line: line, location: location, block: block)
-                location.lineNumber! += 1
-            } catch {
-                stop = true
-                err = error
-            }
+            try self.lex(line: line, location: location, block: block)
+            location.lineNumber! += 1
         }
-
-        if err != nil { throw err! }
     }
 
     func lex(line: String, location: TweeLocation, block handleToken: (TweeToken, TweeLocation) throws -> Void) throws {
