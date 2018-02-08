@@ -53,8 +53,7 @@ class TweeLexerTests: XCTestCase {
     func testInvalidLink() {
         checkLexerFails("""
             Missing [[Choice
-        """, expectedError: .InvalidLinkSyntax, lineNumber: 1
-        )
+        """, expectedError: .InvalidLinkSyntax, lineNumber: 1)
     }
     
     func testInvalidLinkWords() {
@@ -62,16 +61,14 @@ class TweeLexerTests: XCTestCase {
             [[OK]]
             [[OK|Also]]
             [[Too|many|words]]
-        """, expectedError: .InvalidLinkSyntax, lineNumber: 3
-        )
+        """, expectedError: .InvalidLinkSyntax, lineNumber: 3)
     }
 
     func testInvalidMacro() {
         checkLexerFails("""
             <<if $ok>>
             Missing <<if
-        """, expectedError: .InvalidMacroSyntax, lineNumber: 2
-        )
+        """, expectedError: .InvalidMacroSyntax, lineNumber: 2)
     }
 
     

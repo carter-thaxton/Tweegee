@@ -28,7 +28,18 @@ class TweeParserTests: XCTestCase {
     }
 
     func testTextOutsidePassage() {
-        checkParseFails("Some text", expectedError: TweeError.TextOutsidePassage, lineNumber: 1)
+        checkParserFails("""
+            Some text
+        """, expectedError: .TextOutsidePassage, lineNumber: 1)
+    }
+    
+    func testBadLexInParser() {
+        checkParserFails("""
+            ::Passage
+            [[OK]]
+            [[OK|Also]]
+            [[Too|many|words]]
+        """, expectedError: .InvalidLinkSyntax, lineNumber: 4)
     }
     
     
@@ -39,7 +50,7 @@ class TweeParserTests: XCTestCase {
         return try! parser.parse(string: string)
     }
 
-    func checkParseFails(_ string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
+    func checkParserFails(_ string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
         let parser = TweeParser()
         do {
             let _ = try parser.parse(string: string)
