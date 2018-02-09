@@ -40,7 +40,7 @@ func runParse(filename: String) {
 
 func showHelp() -> Never {
     print("""
-        Usage: tweegee [--lexOnly] <filename>
+    Usage: tweegee [--lexOnly] <filename>
     """)
     exit(1)
 }
