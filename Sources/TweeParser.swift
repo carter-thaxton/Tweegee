@@ -12,7 +12,8 @@ class TweeParser {
     let lexer = TweeLexer()
     let story = TweeStory()
     var currentPassage : TweePassage?
-    
+    var numTokensParsed = 0
+
     func parse(filename: String) throws -> TweeStory {
         try lexer.lex(filename: filename, block: handleToken)
         return story
@@ -24,6 +25,8 @@ class TweeParser {
     }
 
     func handleToken(token: TweeToken, location: TweeLocation) throws {
+        numTokensParsed += 1
+        
         func ensurePassage() throws {
             if currentPassage == nil {
                 throw TweeErrorLocation(error: TweeError.TextOutsidePassage, location: location)

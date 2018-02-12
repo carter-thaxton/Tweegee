@@ -33,6 +33,7 @@ func runParse(filename: String) {
     do {
         let story = try parser.parse(filename: filename)
         print("Parsed \(story.passages.count) passages")
+        print("Lexed \(parser.numTokensParsed) tokens")
     } catch {
         print("Error while parsing \(filename): \(error)")
     }
