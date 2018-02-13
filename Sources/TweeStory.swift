@@ -10,11 +10,16 @@ import Foundation
 
 class TweeStory {
     var passages = [String : TweePassage]()
-    var startPassage : TweePassage?
+
+    var startPassage : TweePassage? {
+        // For now, don't support Twee2Settings to specify the start passage.
+        // Just hardcode to use "Start" as the passage name.
+        return passages["Start"]
+    }
 
     func addPassage(passage: TweePassage) throws {
         if let _ = passages[passage.name] {
-            // TODO: add reference to existing passage
+            // TODO: include reference to existing passage in error
             throw TweeErrorLocation(error: TweeError.DuplicatePassageName, location: passage.location)
         }
         passages[passage.name] = passage

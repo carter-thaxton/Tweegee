@@ -25,6 +25,7 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(story.passages["Passage2"]!.location.lineNumber, 5)
         XCTAssertNil(story.passages["Passage1"]!.location.filename)
         XCTAssertNil(story.passages["Passage2"]!.location.filename)
+        XCTAssertNil(story.startPassage)
     }
 
     func testNestedStatements() {
@@ -57,6 +58,24 @@ class TweeParserTests: XCTestCase {
         """)
 
         XCTAssertEqual(story.passages.count, 5)
+        XCTAssertNil(story.startPassage)
+    }
+    
+    func testStartPassage() {
+        let story = parse("""
+            ::Start
+            [[Choose 1|Passage1]] | [[or 2|Passage2]]
+
+            ::Passage1
+            Chose 1
+
+            ::Passage2
+            Chose 2
+        """)
+        
+        XCTAssertEqual(story.passages.count, 3)
+        XCTAssertNotNil(story.startPassage)
+        XCTAssertEqual(story.startPassage!.name, "Start")
     }
 
     func testTextOutsidePassage() {
