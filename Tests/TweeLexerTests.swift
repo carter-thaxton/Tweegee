@@ -148,7 +148,7 @@ class TweeLexerTests: XCTestCase {
             try lexer.lex(string: string) { _, _ in }
         } catch let error as TweeErrorLocation {
             if expectedError != nil {
-                XCTAssertEqual(error.error as! TweeError, expectedError!)
+                XCTAssertEqual(error.error, expectedError!)
             }
             if lineNumber != nil {
                 XCTAssertEqual(error.location.lineNumber, lineNumber)

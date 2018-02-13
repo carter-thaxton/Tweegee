@@ -88,7 +88,7 @@ class TweeParserTests: XCTestCase {
             let _ = try parser.parse(string: string)
         } catch let error as TweeErrorLocation {
             if expectedError != nil {
-                XCTAssertEqual(error.error as! TweeError, expectedError!)
+                XCTAssertEqual(error.error, expectedError!)
             }
             if lineNumber != nil {
                 XCTAssertEqual(error.location.lineNumber, lineNumber)
