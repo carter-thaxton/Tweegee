@@ -59,7 +59,7 @@ class TweeLexerTests: XCTestCase {
             Text <<if true>>  two spaces  <<else>><<if true>>  initial space<<else>>trailing space  <<endif>>   <<endif>>
             <<if true>>
                 Say "<<$text>>" and wave.
-            <<else>>
+            <<else>>   // whitespace before comment ignored
                 [[go_here]]
             <<endif>>
             Text // then a comment
@@ -91,6 +91,7 @@ class TweeLexerTests: XCTestCase {
             .Newline,
             
             .Macro(name: "else", expr: nil),
+            .Comment("whitespace before comment ignored"),
             .Newline,
             
             .Link(name: "go_here", title: nil),

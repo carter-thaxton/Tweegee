@@ -40,6 +40,7 @@ class TweeParserTests: XCTestCase {
                 <<else>>
                     <<if $test > 6>>Not this either [[Passage3]]<<else>>Then this<<endif>>
                     [[Passage4]]
+                <<endif>>
             <<else>>
                 [[Passage5]]
             <<endif>>
@@ -86,14 +87,77 @@ class TweeParserTests: XCTestCase {
     
     func testBadLexInParser() {
         checkParserFails("""
-            ::Passage
+            ::Start
             [[OK]]
             [[OK|Also]]
             [[Too|many|words]]
         """, expectedError: .InvalidLinkSyntax, lineNumber: 4)
     }
     
+    func testUnmatchedIf() {
+        checkParserFails("""
+            ::Start
+            Some text
+            <<if true>>
+
+            ::Passage2
+            More text
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
+    }
+
+    func testUnmatchedElse() {
+        checkParserFails("""
+            ::Start
+            Some text
+            <<else>>
+        """, expectedError: .UnmatchedElse, lineNumber: 3)
+    }
     
+    func testUnmatchedEndIf() {
+        checkParserFails("""
+            ::Start
+            Some text
+            <<endif>>
+        """, expectedError: .UnmatchedEndIf, lineNumber: 3)
+    }
+
+    func testNestedIfs() {
+        let _ = parse("""
+            ::Start
+            <<if true>>
+                <<if false>>
+                Not here
+                <<elseif true>>
+                YES
+                <<endif>>
+            <<else>>
+                Not here either
+            <<endif>>
+            Some final words
+            <<endif>>
+        """)
+    }
+    
+    func testNewlinesAndIfs() {
+        let _ = parse("""
+            ::Start
+            I see <<if $x>>a bird<<else>>nothing<<endif>>.
+            On the horizon, I see <<if $y>>a...
+            really...
+            big...
+            elephant!
+            <<else>>just a smudge<<endif>>.
+        """)
+        
+        // I see a bird.
+        // I see nothing.
+        // On the horizon, I see a...
+        // really...
+        // big...
+        // elephant!
+        // On the horizon, I see just a smudge.
+    }
+
     // MARK: Helper methods
 
     func parse(_ string : String) -> TweeStory {
