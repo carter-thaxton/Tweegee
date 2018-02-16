@@ -20,30 +20,10 @@ class TweeStory {
     func addPassage(passage: TweePassage) throws {
         if let _ = passages[passage.name] {
             // TODO: include reference to existing passage in error
-            throw TweeErrorLocation(error: TweeError.DuplicatePassageName, location: passage.location)
+            throw TweeErrorLocation(error: .DuplicatePassageName, location: passage.location)
         }
         passages[passage.name] = passage
     }
-}
-
-class TweePassage {
-    let location : TweeLocation
-    let name : String
-    let position : CGPoint?
-    let tags : [String]
-    let block = TweeCodeBlock()
-
-    init(location: TweeLocation, name: String, position: CGPoint?, tags: [String]) {
-        self.location = location
-        self.name = name
-        self.position = position
-        self.tags = tags
-    }
-}
-
-
-class TweeCodeBlock {
-    var statements = [TweeStatement]()
 }
 
 class TweeStatement {
@@ -54,11 +34,41 @@ class TweeStatement {
     }
 }
 
-class TweeNewlineStatement : TweeStatement {
+class TweeCodeBlock {
+    var statements = [TweeStatement]()
+    
+    func add(_ statement: TweeStatement) {
+        statements.append(statement)
+    }
+    
+    var last : TweeStatement? { return statements.last }
+    
+    @discardableResult func pop() -> TweeStatement? {
+        return statements.popLast()
+    }
 }
 
-class TweeSilentlyStatement : TweeStatement {
+protocol NestableStatement {
+    var location : TweeLocation { get }
+    var block : TweeCodeBlock { get }
+}
+
+class TweePassage : TweeStatement, NestableStatement {
+    let name : String
+    let position : CGPoint?
+    let tags : [String]
     let block = TweeCodeBlock()
+
+    init(location: TweeLocation, name: String, position: CGPoint?, tags: [String]) {
+        self.name = name
+        self.position = position
+        self.tags = tags
+        super.init(location: location)
+    }
+}
+
+
+class TweeNewlineStatement : TweeStatement {
 }
 
 class TweeTextStatement : TweeStatement {
@@ -68,6 +78,21 @@ class TweeTextStatement : TweeStatement {
         self.text = text
         super.init(location: location)
     }
+}
+
+class TweeLinkStatement : TweeStatement {
+    let name : String
+    let title : String?
+    
+    init(location: TweeLocation, name: String, title: String?) {
+        self.name = name
+        self.title = title
+        super.init(location: location)
+    }
+}
+
+class TweeChoiceStatement : TweeStatement {
+    var choices = [TweeLinkStatement]()
 }
 
 class TweeLetStatement : TweeStatement {
@@ -90,36 +115,53 @@ class TweeExpressionStatement : TweeStatement {
     }
 }
 
-class TweeIfStatement : TweeStatement {
-    enum ElseClause {
-        case Else(block: TweeCodeBlock)
-        case ElseIf(ifStatement: TweeIfStatement)
+class TweeIfStatement : TweeStatement, NestableStatement {
+    struct IfClause {
+        let condition : TweeExpression
+        var block = TweeCodeBlock()
+        
+        init(condition : TweeExpression) {
+            self.condition = condition
+        }
     }
 
-    let condition : TweeExpression
-    let block = TweeCodeBlock()
-    var elseClause : ElseClause?
+    var clauses = [IfClause]()
+    var elseBlock : TweeCodeBlock?
+
+    var ifCondition : TweeExpression { return clauses[0].condition }
+    var ifBlock : TweeCodeBlock { return clauses[0].block }
+    
+    // to conform to NestableStatement
+    var block : TweeCodeBlock {
+        return elseBlock ?? clauses.last!.block
+    }
 
     init(location: TweeLocation, condition: TweeExpression) {
-        self.condition = condition
+        clauses.append(IfClause(condition: condition))  // Always initialize with at least one clause
         super.init(location: location)
+    }
+    
+    func addElseIf(condition: TweeExpression) -> TweeCodeBlock {
+        clauses.append(IfClause(condition: condition))
+        return clauses.last!.block
     }
 }
 
 
 //  stmt ->
 //    newline
-//    silently (stmts)
 //    text (string)
+//    link (name, title)
+//    choice ([link])
 //    let (var, expr)
+//    if (expr, block, else)
 //    expr  (see below)  // when used like this, represents conversion of expression to string
-//    if (expr, stmts, else)
 
 //  else ->
 //    stmts
-//    elseif -> if (expr, stmts, else)
+//    elseif -> if (expr, block, else)
 
-//  stmts ->
+//  block ->
 //    [stmt]
 
 //  expr ->

@@ -64,6 +64,8 @@ private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 
 
 class TweeLexer {
+    let lettersAndSlash = CharacterSet.letters.union(CharacterSet(charactersIn: "/"))
+
     func lex(filename: String, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
         try lex(string: str, filename: filename, block: block)
@@ -120,11 +122,11 @@ class TweeLexer {
                                 } else if nameAndTitle.count == 1 {
                                     try handleToken(.Link(name: nameAndTitle[0], title: nil), location)
                                 } else {
-                                    throw TweeErrorLocation(error: TweeError.InvalidLinkSyntax, location: location)
+                                    throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location)
                                 }
                                 s.match("]]")
                             } else {
-                                throw TweeErrorLocation(error: TweeError.InvalidLinkSyntax, location: location)
+                                throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location)
                             }
                         } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
                             if !accText.isEmpty {
@@ -136,9 +138,9 @@ class TweeLexer {
                                 let text = macro!!.trimmingCharacters(in: .whitespaces)
                                 if text.isEmpty {
                                     // empty macro, invalid
-                                    throw TweeErrorLocation(error: TweeError.InvalidMacroSyntax, location: location)
-                                } else if !CharacterSet.letters.contains(text.unicodeScalars.first!) {
-                                    // doesn't start with a letter, so it's a raw expression
+                                    throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location)
+                                } else if !lettersAndSlash.contains(text.unicodeScalars.first!) {
+                                    // doesn't start with a letter or slash, so it's a raw expression
                                     try handleToken(.Macro(name: nil, expr: text), location)
                                 } else {
                                     // starts with a latter, split on name and rest of expression
@@ -151,7 +153,7 @@ class TweeLexer {
                                 }
                                 s.match(">>")
                             } else {
-                                throw TweeErrorLocation(error: TweeError.InvalidMacroSyntax, location: location)
+                                throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location)
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
                             accText = accText.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace

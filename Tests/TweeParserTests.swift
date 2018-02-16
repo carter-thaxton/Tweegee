@@ -99,26 +99,78 @@ class TweeParserTests: XCTestCase {
             ::Start
             Some text
             <<if true>>
-
-            ::Passage2
-            More text
-        """, expectedError: .UnmatchedIf, lineNumber: 3)
+        """, expectedError: .MissingEndIf, lineNumber: 3)
     }
 
+    func testUnmatchedIfAtPassage() {
+        checkParserFails("""
+            ::Start
+            Some text
+            <<if true>>
+
+            ::NextPassage
+        """, expectedError: .MissingEndIf, lineNumber: 3)
+    }
+    
+    func testUnmatchedIfWithElseIf() {
+        checkParserFails("""
+            ::Start
+            Some text
+            <<if true>>
+            <<elseif true>>
+        """, expectedError: .MissingEndIf, lineNumber: 3)
+    }
+    
+    func testUnmatchedIfWithElseIfAndElse() {
+        checkParserFails("""
+            ::Start
+            Some text
+            <<if true>>
+            <<elseif true>>
+            <<else>>
+        """, expectedError: .MissingEndIf, lineNumber: 3)
+    }
+    
     func testUnmatchedElse() {
         checkParserFails("""
             ::Start
             Some text
             <<else>>
-        """, expectedError: .UnmatchedElse, lineNumber: 3)
+        """, expectedError: .MissingIf, lineNumber: 3)
     }
-    
+
     func testUnmatchedEndIf() {
         checkParserFails("""
             ::Start
             Some text
             <<endif>>
-        """, expectedError: .UnmatchedEndIf, lineNumber: 3)
+        """, expectedError: .MissingIf, lineNumber: 3)
+    }
+
+    func testDuplicateElse() {
+        checkParserFails("""
+            ::Start
+            <<if true>>
+                OK
+            <<else>>
+                OK2
+            <<else>>
+                Dupe
+            <<endif>>
+        """, expectedError: .DuplicateElse, lineNumber: 6)
+    }
+    
+    func testElseIfAfterElse() {
+        checkParserFails("""
+            ::Start
+            <<if true>>
+                OK
+            <<else>>
+                OK2
+            <<elseif true>>
+                Dupe
+            <<endif>>
+        """, expectedError: .DuplicateElse, lineNumber: 6)
     }
 
     func testNestedIfs() {
@@ -134,7 +186,6 @@ class TweeParserTests: XCTestCase {
                 Not here either
             <<endif>>
             Some final words
-            <<endif>>
         """)
     }
     
@@ -156,6 +207,7 @@ class TweeParserTests: XCTestCase {
         // big...
         // elephant!
         // On the horizon, I see just a smudge.
+//        XCTFail("TODO")
     }
 
     // MARK: Helper methods

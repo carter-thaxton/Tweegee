@@ -18,9 +18,13 @@ enum TweeError : Equatable {
     case InvalidMacroSyntax
     case DuplicatePassageName
     case TextOutsidePassage
-    case UnmatchedIf
-    case UnmatchedElse
-    case UnmatchedEndIf
+    case MissingIf
+    case MissingEndIf
+    case DuplicateElse
+    case MissingExpression
+    case UnexpectedExpression
+    case InvalidExpression
+    case UnrecognizedMacro
 }
 
 struct TweeLocation {
