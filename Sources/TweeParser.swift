@@ -120,6 +120,9 @@ class TweeParser {
                     try parseSet(expr: expr, location: location)
                     break
 
+                case "choice":
+                    try parseChoice(expr: expr, location: location)
+
                 case "silently", "endsilently", "/silently":
                     // ignore these for now
                     break
@@ -196,6 +199,20 @@ class TweeParser {
 
         let setStmt = TweeSetStatement(location: location, variable: variable, expression: setExpr)
         currentCodeBlock!.add(setStmt)
+    }
+    
+    private func parseChoice(expr: String?, location: TweeLocation) throws {
+        guard let expr = expr else {
+            throw TweeErrorLocation(error: .MissingExpression, location: location, message: "No expression given for choice")
+        }
+
+        // This is a weird one.  Just lex the contents of a choice macro, as though the choice didn't even exist.
+        // Technically this will allow just about anything inside the macro, but it works well enough.  We don't plan on using this going forward.
+        do {
+            try lexer.lex(string: expr, block: handleToken)
+        } catch let error as TweeErrorLocation {
+            throw TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(error.message)")
+        }
     }
 
     // MARK: Expression Parsing

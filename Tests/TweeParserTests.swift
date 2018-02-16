@@ -209,7 +209,16 @@ class TweeParserTests: XCTestCase {
         // On the horizon, I see just a smudge.
 //        XCTFail("TODO")
     }
+    
+    func testInvalidChoice() {
+        checkParserFails("""
+            ::Passage1
+            Some text
+            <<choice [[Missing close|missing]] | <<choice [[This is ok|itsok]]>>
+        """, expectedError: .InvalidChoiceSyntax, lineNumber: 3)
+    }
 
+    
     // MARK: Helper methods
 
     func parse(_ string : String) -> TweeStory {
