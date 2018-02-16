@@ -48,7 +48,7 @@ class TweeParser {
                 currentStatements.removeAll()
             }
             else if stmt is TweeIfStatement {
-                throw TweeErrorLocation(error: .MissingEndIf, location: stmt.location)
+                throw TweeErrorLocation(error: .MissingEndIf, location: stmt.location, message: "Passage ended without closing endif")
             } else {
                 fatalError("Unexpected type of open statement: \(stmt)")
             }
@@ -60,7 +60,7 @@ class TweeParser {
         
         func ensureCodeBlock() throws {
             if currentPassage == nil || currentCodeBlock == nil {
-                throw TweeErrorLocation(error: .TextOutsidePassage, location: location)
+                throw TweeErrorLocation(error: .TextOutsidePassage, location: location, message: "No text is allowed outside of a passage")
             }
         }
         
@@ -116,8 +116,8 @@ class TweeParser {
                 case "if", "else", "elseif", "endif", "/if":
                     try parseIf(name: name!, expr: expr, location: location)
 
-                case "let":
-                    try parseLet(expr: expr, location: location)
+                case "set":
+                    try parseSet(expr: expr, location: location)
                     break
 
                 case "silently", "endsilently", "/silently":
@@ -125,7 +125,7 @@ class TweeParser {
                     break
 
                 default:
-                    throw TweeErrorLocation(error: .UnrecognizedMacro, location: location)
+                    throw TweeErrorLocation(error: .UnrecognizedMacro, location: location, message: "Unrecognized macro: \(name!)")
                 }
             }
         }
@@ -135,46 +135,45 @@ class TweeParser {
         switch name {
         case "if":
             guard let expr = expr else {
-                throw TweeErrorLocation(error: .MissingExpression, location: location)
+                throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for if")
             }
-            let cond = try parse(expression: expr, location: location)
+            let cond = try parse(expression: expr, location: location, for: "if")
             let stmt = TweeIfStatement(location: location, condition: cond)
             currentStatements.append(stmt)
 
         case "else":
             if expr != nil {
-                throw TweeErrorLocation(error: .InvalidExpression, location: location)
+                throw TweeErrorLocation(error: .UnexpectedExpression, location: location, message: "Unexpected expression in else")
             }
             guard let ifStmt = currentStatement as? TweeIfStatement else {
-                throw TweeErrorLocation(error: .MissingIf, location: location)
+                throw TweeErrorLocation(error: .MissingIf, location: location, message: "Found else without corresponding if")
             }
             if ifStmt.elseBlock != nil {
-                throw TweeErrorLocation(error: .DuplicateElse, location: location)
+                throw TweeErrorLocation(error: .DuplicateElse, location: location, message: "Duplicate else clause")
             }
             ifStmt.elseBlock = TweeCodeBlock()
             assert(currentCodeBlock === ifStmt.elseBlock)
 
         case "elseif":
             guard let expr = expr else {
-                throw TweeErrorLocation(error: .MissingExpression, location: location)
+                throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for elseif")
             }
-            let cond = try parse(expression: expr, location: location)
+            let cond = try parse(expression: expr, location: location, for: "elseif")
             guard let ifStmt = currentStatement as? TweeIfStatement else {
-                throw TweeErrorLocation(error: .MissingIf, location: location)
+                throw TweeErrorLocation(error: .MissingIf, location: location, message: "Found elseif without corresponding if")
             }
             if ifStmt.elseBlock != nil {
-                // elseif after else
-                throw TweeErrorLocation(error: .DuplicateElse, location: location)
+                throw TweeErrorLocation(error: .DuplicateElse, location: location, message: "Found elseif after else")
             }
             let elseIfBlock = ifStmt.addElseIf(condition: cond)
             assert(currentCodeBlock === elseIfBlock)
 
         case "endif", "/if":
             if expr != nil {
-                throw TweeErrorLocation(error: .UnexpectedExpression, location: location)
+                throw TweeErrorLocation(error: .UnexpectedExpression, location: location, message: "Unexpected expression in endif")
             }
             if !(currentStatement is TweeIfStatement) {
-                throw TweeErrorLocation(error: .MissingIf, location: location)
+                throw TweeErrorLocation(error: .MissingIf, location: location, message: "Found endif without corresponding if")
             }
             _ = currentStatements.popLast()
             
@@ -183,27 +182,27 @@ class TweeParser {
         }
     }
 
-    private func parseLet(expr: String?, location: TweeLocation) throws {
+    private func parseSet(expr: String?, location: TweeLocation) throws {
         guard let expr = expr else {
-            throw TweeErrorLocation(error: .MissingExpression, location: location)
+            throw TweeErrorLocation(error: .MissingExpression, location: location, message: "No expression given for set")
         }
 
         let variableAndExpr = expr.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: true).map { $0.trimmingCharacters(in: .whitespaces) }
         if variableAndExpr.count != 2 {
-            throw TweeErrorLocation(error: .InvalidExpression, location: location)
+            throw TweeErrorLocation(error: .InvalidExpression, location: location, message: "Invalid expression for set.  Should be <<set $var = val>>")
         }
         let variable = variableAndExpr[0]
-        let letExpr = try parse(expression: variableAndExpr[1], location: location)
+        let setExpr = try parse(expression: variableAndExpr[1], location: location, for: "set")
 
-        let letStmt = TweeLetStatement(location: location, variable: variable, expression: letExpr)
-        currentCodeBlock!.add(letStmt)
+        let setStmt = TweeSetStatement(location: location, variable: variable, expression: setExpr)
+        currentCodeBlock!.add(setStmt)
     }
 
     // MARK: Expression Parsing
 
-    func parse(expression: String?, location: TweeLocation = TweeLocation()) throws -> TweeExpression {
+    func parse(expression: String?, location: TweeLocation, for macro: String) throws -> TweeExpression {
         if expression == nil {
-            throw TweeErrorLocation(error: .InvalidExpression, location: location)
+            throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for \(macro)")
         }
         // TODO: finish this
         return TweeExpression()

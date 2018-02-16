@@ -77,7 +77,7 @@ class TweeLexer {
         for line in lines {
             location.line = line
             try self.lex(line: line, location: location, block: block)
-            location.lineNumber! += 1
+            location.lineNumber += 1
         }
     }
 
@@ -122,11 +122,11 @@ class TweeLexer {
                                 } else if nameAndTitle.count == 1 {
                                     try handleToken(.Link(name: nameAndTitle[0], title: nil), location)
                                 } else {
-                                    throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location)
+                                    throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location, message: "Invalid link syntax.  Too many | symbols")
                                 }
                                 s.match("]]")
                             } else {
-                                throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location)
+                                throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location, message: "Invalid link syntax.  Missing ]]")
                             }
                         } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
                             if !accText.isEmpty {
@@ -137,8 +137,7 @@ class TweeLexer {
                             if macro != nil && macro! != nil {
                                 let text = macro!!.trimmingCharacters(in: .whitespaces)
                                 if text.isEmpty {
-                                    // empty macro, invalid
-                                    throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location)
+                                    throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location, message: "Found empty macro")
                                 } else if !lettersAndSlash.contains(text.unicodeScalars.first!) {
                                     // doesn't start with a letter or slash, so it's a raw expression
                                     try handleToken(.Macro(name: nil, expr: text), location)
@@ -153,7 +152,7 @@ class TweeLexer {
                                 }
                                 s.match(">>")
                             } else {
-                                throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location)
+                                throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location, message: "Invalid macro syntax.  Missing >>")
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
                             accText = accText.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace

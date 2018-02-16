@@ -13,7 +13,7 @@ class TweeParserTests: XCTestCase {
     func testBasicParse() {
         let story = parse("""
             ::Passage1
-            <<let $test = 5>>
+            <<set $test = 5>>
             <<if $test is 5>>Say this<<else>>Don't say this<<endif>>
 
             ::Passage2
@@ -31,7 +31,7 @@ class TweeParserTests: XCTestCase {
     func testNestedStatements() {
         let story = parse("""
             ::Passage1
-            <<let $test = 5>>
+            <<set $test = 5>>
             <<if $test is 5>>
                 Say this
                 <<if $test < 10>>

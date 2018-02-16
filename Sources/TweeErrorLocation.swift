@@ -11,6 +11,7 @@ import Foundation
 struct TweeErrorLocation : Error {
     let error : TweeError
     let location : TweeLocation
+    let message : String
 }
 
 enum TweeError : Equatable {
@@ -30,5 +31,5 @@ enum TweeError : Equatable {
 struct TweeLocation {
     var filename : String?
     var line : String?
-    var lineNumber : Int?
+    var lineNumber : Int
 }

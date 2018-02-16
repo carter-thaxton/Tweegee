@@ -18,9 +18,9 @@ class TweeStory {
     }
 
     func addPassage(passage: TweePassage) throws {
-        if let _ = passages[passage.name] {
-            // TODO: include reference to existing passage in error
-            throw TweeErrorLocation(error: .DuplicatePassageName, location: passage.location)
+        if let existing = passages[passage.name] {
+            throw TweeErrorLocation(error: .DuplicatePassageName, location: passage.location,
+                                    message: "Passage \(passage.name) is already defined on line \(existing.location.lineNumber)")
         }
         passages[passage.name] = passage
     }
@@ -95,7 +95,7 @@ class TweeChoiceStatement : TweeStatement {
     var choices = [TweeLinkStatement]()
 }
 
-class TweeLetStatement : TweeStatement {
+class TweeSetStatement : TweeStatement {
     let variable : String
     let expression : TweeExpression
 

@@ -10,14 +10,11 @@ import Foundation
 
 
 func runLexOnly(filename: String) {
-    print("Lexing twee file: \(filename)")
-    
     let lexer = TweeLexer()
     do {
         var tokens = 0
         try lexer.lex(filename: filename) { (token, location) in
             tokens += 1
-            //            print(token, location)
         }
         print("Lexed \(tokens) tokens")
     } catch {
@@ -27,15 +24,18 @@ func runLexOnly(filename: String) {
 
 
 func runParse(filename: String) {
-    print("Parsing twee file: \(filename)")
-    
     let parser = TweeParser()
     do {
         let story = try parser.parse(filename: filename)
         print("Parsed \(story.passages.count) passages")
         print("Lexed \(parser.numTokensParsed) tokens")
+    } catch let error as TweeErrorLocation {
+        print("Error on line: \(error.location.lineNumber) - \(error.message)")
+        if let line = error.location.line {
+            print(line)
+        }
     } catch {
-        print("Error while parsing \(filename): \(error)")
+        print("Unexpected error while parsing \(filename): \(error)")
     }
 }
 
