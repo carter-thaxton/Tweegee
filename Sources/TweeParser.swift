@@ -134,6 +134,7 @@ class TweeParser {
                     currentCodeBlock!.pop()
                     let stmt = TweeChoiceStatement(location: link.location)
                     stmt.choices.append(link)
+                    currentCodeBlock!.add(stmt)
                 } else if let choices = currentCodeBlock?.last as? TweeChoiceStatement {
                     // already a list of choices, simply ignore the |
                     _ = choices
@@ -146,7 +147,13 @@ class TweeParser {
         case .Link(let name, let title):
             try ensureCodeBlock()
             let stmt = TweeLinkStatement(location: location, name: name, title: title)
-            currentCodeBlock!.add(stmt)
+
+            // check if link is part of a list of choices
+            if let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement {
+                choiceStmt.choices.append(stmt)
+            } else {
+                currentCodeBlock!.add(stmt)
+            }
 
         case .Macro(let name, let expr):
             try ensureCodeBlock()

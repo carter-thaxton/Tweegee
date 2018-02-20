@@ -222,6 +222,47 @@ class TweeParserTests: XCTestCase {
 //        XCTFail("TODO")
     }
     
+    func testChoiceSyntax() {
+        let story = parse("""
+            ::Start
+            Some text
+
+            ::ChoicesAsLinks
+            [[choice1]] | [[Choice 2|choice2]]
+
+            ::ChoicesAsMacros
+            <<choice [[choice1]]>> | <<choice [[Choice 2|choice2]]>>
+
+            ::ChoicesMixed1
+            <<choice [[choice1]]>> | [[Choice 2|choice2]]
+
+            ::ChoicesMixed2
+            [[choice1]] | <<choice [[Choice 2|choice2]]>>
+        """)
+        
+        func checkTwoChoices(_ passage: TweePassage) {
+            let stmts = passage.block.statements
+            XCTAssertEqual(stmts.count, 1)
+            
+            let choice = stmts[0] as? TweeChoiceStatement
+            XCTAssertNotNil(choice)
+            XCTAssertEqual(choice!.choices.count, 2)
+            
+            let link1 = choice!.choices[0]
+            XCTAssertEqual(link1.name, "choice1")
+            XCTAssertNil(link1.title)
+
+            let link2 = choice!.choices[1]
+            XCTAssertEqual(link2.name, "choice2")
+            XCTAssertEqual(link2.title, "Choice 2")
+        }
+
+        checkTwoChoices(story.passagesByName["ChoicesAsLinks"]!)
+        checkTwoChoices(story.passagesByName["ChoicesAsMacros"]!)
+        checkTwoChoices(story.passagesByName["ChoicesMixed1"]!)
+        checkTwoChoices(story.passagesByName["ChoicesMixed2"]!)
+    }
+    
     func testInvalidChoice() {
         checkParserFails("""
             ::Passage1
