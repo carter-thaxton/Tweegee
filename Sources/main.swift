@@ -31,7 +31,7 @@ func runParse(filename: String) {
         print("Lexed \(parser.numTokensParsed) tokens")
         
         let data = story.toJSON()
-        print(JSON(data))
+        print(toJSON(data))
         
     } catch let error as TweeErrorLocation {
         print("Error on line: \(error.location.lineNumber) - \(error.message)")
@@ -41,6 +41,13 @@ func runParse(filename: String) {
     } catch {
         print("Unexpected error while parsing \(filename): \(error)")
     }
+}
+
+func toJSON(_ data : Any) -> String {
+    if let serialized = try? JSONSerialization.data(withJSONObject: data, options: .prettyPrinted) {
+        return String(data: serialized, encoding: .utf8)!
+    }
+    return ""
 }
 
 func showHelp() -> Never {
