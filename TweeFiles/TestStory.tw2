@@ -14,11 +14,16 @@ Make a choice:
 
 ::NextPhase <759,301>
 This is the next phase.
+<<set $a = 5>>
 [[Another thing]]
 
 ::Another thing <922,308>
-And then this other thing happens.
-[[See?]]
+And then this other thing happens with <<$a>>.
+<<if $a is 5>>
+    [[See?]]
+<<else>>
+    [[The End]]
+<<endif>>
 
 ::See? <1004,490>
 You win!

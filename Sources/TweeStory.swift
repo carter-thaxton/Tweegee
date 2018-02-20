@@ -109,6 +109,14 @@ class TweeCodeBlock {
     @discardableResult func pop() -> TweeStatement? {
         return statements.popLast()
     }
+    
+    func asJson() -> DictArr {
+        var result = DictArr()
+        for stmt in statements {
+            result.append(stmt.asJson())
+        }
+        return result
+    }
 }
 
 protocol NestableStatement {
@@ -140,11 +148,7 @@ class TweePassage : TweeStatement, NestableStatement {
     }
 
     override func asJson() -> Dict {
-        var statements = DictArr()
-        for stmt in self.block.statements {
-            statements.append(stmt.asJson())
-        }
-        return ["name": self.name, "tags": self.tags, "statements": statements]
+        return ["name": self.name, "tags": self.tags, "statements": block.asJson()]
     }
 }
 
@@ -186,7 +190,11 @@ class TweeChoiceStatement : TweeStatement {
     var choices = [TweeLinkStatement]()
 
     override func asJson() -> Dict {
-        return ["type": "choice"]
+        var links = DictArr()
+        for choice in choices {
+            links.append(choice.asJson())
+        }
+        return ["type": "choice", "choices": links]
     }
 }
 
@@ -201,7 +209,7 @@ class TweeSetStatement : TweeStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "set"]
+        return ["type": "set", "variable": variable, "expression": expression.string]
     }
 }
 
@@ -214,7 +222,7 @@ class TweeExpressionStatement : TweeStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "expression"]
+        return ["type": "expression", "expression": expression.string]
     }
 }
 
@@ -250,7 +258,15 @@ class TweeIfStatement : TweeStatement, NestableStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "if"]
+        var clauseData = DictArr()
+        for clause in clauses {
+            clauseData.append(["cond": clause.condition.string, "statements": clause.block.asJson()])
+        }
+        var elseClause : Any = NSNull()
+        if elseBlock != nil {
+            elseClause = elseBlock!.asJson()
+        }
+        return ["type": "if", "clauses": clauseData, "else": elseClause]
     }
 }
 

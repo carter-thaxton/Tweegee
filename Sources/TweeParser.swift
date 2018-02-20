@@ -159,7 +159,9 @@ class TweeParser {
             try ensureCodeBlock()
             if name == nil {
                 // raw expression used in macro
-                
+                let expression = try parse(expression: expr, location: location, for: "exprStmt")
+                let exprStmt = TweeExpressionStatement(location: location, expression: expression)
+                currentCodeBlock!.add(exprStmt)
             } else {
                 switch name! {
                 case "if", "else", "elseif", "endif", "/if":
@@ -190,8 +192,9 @@ class TweeParser {
                 throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for if")
             }
             let cond = try parse(expression: expr, location: location, for: "if")
-            let stmt = TweeIfStatement(location: location, condition: cond)
-            currentStatements.append(stmt)
+            let ifStmt = TweeIfStatement(location: location, condition: cond)
+            currentCodeBlock!.add(ifStmt)
+            currentStatements.append(ifStmt)
 
         case "else":
             if expr != nil {
