@@ -9,22 +9,49 @@
 import Foundation
 
 class TweeStory {
-    var passages = [String : TweePassage]()
+    var passagesByName = [String : TweePassage]()
+    var passagesInOrder = [TweePassage]()
+    
+    var passageCount : Int { return passagesInOrder.count }
 
     var startPassage : TweePassage? {
         // For now, don't support Twee2Settings to specify the start passage.
         // Just hardcode to use "Start" as the passage name.
-        return passages["Start"]
+        return passagesByName["Start"]
     }
 
     func addPassage(passage: TweePassage) throws {
-        if let existing = passages[passage.name] {
+        if let existing = passagesByName[passage.name] {
             throw TweeErrorLocation(error: .DuplicatePassageName, location: passage.location,
                                     message: "Passage \(passage.name) is already defined on line \(existing.location.lineNumber)")
         }
-        passages[passage.name] = passage
+        passagesByName[passage.name] = passage
+        passagesInOrder.append(passage)
     }
 }
+
+//
+//  == GRAMMAR ==
+//
+
+//  passage ->
+//    block
+
+//  block ->
+//    [stmt]
+
+//  stmt ->
+//    newline
+//    text (string)
+//    link (name, title)
+//    choice ([link])
+//    let (var, expr)
+//    if ([ifcond], else-block)
+//    expr  // when used like this, represents use of expression in template
+
+//  ifcond ->
+//    cond (expr)
+//    block
 
 class TweeStatement {
     let location : TweeLocation
@@ -145,40 +172,5 @@ class TweeIfStatement : TweeStatement, NestableStatement {
         clauses.append(IfClause(condition: condition))
         return clauses.last!.block
     }
-}
-
-
-//  stmt ->
-//    newline
-//    text (string)
-//    link (name, title)
-//    choice ([link])
-//    let (var, expr)
-//    if (expr, block, else)
-//    expr  (see below)  // when used like this, represents conversion of expression to string
-
-//  else ->
-//    stmts
-//    elseif -> if (expr, block, else)
-
-//  block ->
-//    [stmt]
-
-//  expr ->
-//    literal (type {number, boolean, string}, value)
-//    var (name)
-//    binop (op, expr1, expr2)  {+ - * / == != < > <= >=}
-//    unop (op, expr1)  {+ - !}
-
-//  synonyms:
-//    ==    is, eq
-//    !=    isnt, ne, ne
-//    <     lt
-//    <=    le, lte
-//    >     gt
-//    >=    ge, gte
-
-class TweeExpression {
-    
 }
 

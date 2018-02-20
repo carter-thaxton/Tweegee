@@ -218,11 +218,11 @@ class TweeParser {
     // MARK: Expression Parsing
 
     func parse(expression: String?, location: TweeLocation, for macro: String) throws -> TweeExpression {
-        if expression == nil {
+        guard let expression = expression else {
             throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for \(macro)")
         }
         // TODO: finish this
-        return TweeExpression()
+        return TweeExpression(from: expression)
     }
 
 }

@@ -27,7 +27,7 @@ func runParse(filename: String) {
     let parser = TweeParser()
     do {
         let story = try parser.parse(filename: filename)
-        print("Parsed \(story.passages.count) passages")
+        print("Parsed \(story.passageCount) passages")
         print("Lexed \(parser.numTokensParsed) tokens")
     } catch let error as TweeErrorLocation {
         print("Error on line: \(error.location.lineNumber) - \(error.message)")
