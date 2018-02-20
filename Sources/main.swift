@@ -27,12 +27,10 @@ func runParse(filename: String) {
     let parser = TweeParser()
     do {
         let story = try parser.parse(filename: filename)
-        print("Parsed \(story.passageCount) passages")
-        print("Lexed \(parser.numTokensParsed) tokens")
-        
-        let data = story.toJSON()
-        print(toJSON(data))
-        
+        let jsonData = story.asJson()
+        let jsonString = try toJsonString(jsonData)
+        print(jsonString)
+
     } catch let error as TweeErrorLocation {
         print("Error on line: \(error.location.lineNumber) - \(error.message)")
         if let line = error.location.line {
@@ -43,11 +41,9 @@ func runParse(filename: String) {
     }
 }
 
-func toJSON(_ data : Any) -> String {
-    if let serialized = try? JSONSerialization.data(withJSONObject: data, options: .prettyPrinted) {
-        return String(data: serialized, encoding: .utf8)!
-    }
-    return ""
+func toJsonString(_ data: Any) throws -> String {
+    let serialized = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+    return String(data: serialized, encoding: .utf8)!
 }
 
 func showHelp() -> Never {

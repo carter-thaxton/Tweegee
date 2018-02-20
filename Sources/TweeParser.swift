@@ -25,17 +25,28 @@ class TweeParser {
 
     func parse(filename: String) throws -> TweeStory {
         try lexer.lex(filename: filename, block: handleToken)
-        try closePassageAndEnsureNoOpenStatements()
-        return story
+        return try finish()
     }
 
     func parse(string: String) throws -> TweeStory {
         try lexer.lex(string: string, block: handleToken)
+        return try finish()
+    }
+    
+    func parse(expression: String?, location: TweeLocation, for macro: String) throws -> TweeExpression {
+        guard let expression = expression else {
+            throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for \(macro)")
+        }
+        // TODO: finish this
+        return TweeExpression(from: expression)
+    }
+
+    // MARK: Parser Implementation
+
+    private func finish() throws -> TweeStory {
         try closePassageAndEnsureNoOpenStatements()
         return story
     }
-    
-    // MARK: Handle Token
     
     private func closePassageAndEnsureNoOpenStatements() throws {
         if let stmt = currentStatement {
@@ -214,15 +225,4 @@ class TweeParser {
             throw TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(error.message)")
         }
     }
-
-    // MARK: Expression Parsing
-
-    func parse(expression: String?, location: TweeLocation, for macro: String) throws -> TweeExpression {
-        guard let expression = expression else {
-            throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for \(macro)")
-        }
-        // TODO: finish this
-        return TweeExpression(from: expression)
-    }
-
 }
