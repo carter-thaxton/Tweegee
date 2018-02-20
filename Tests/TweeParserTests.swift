@@ -8,6 +8,17 @@
 
 import XCTest
 
+// Helper functions to aid testing
+extension TweeStory {
+    var firstPassage : TweePassage {
+        return passagesInOrder[0]
+    }
+    
+    var secondPassage : TweePassage {
+        return passagesInOrder[1]
+    }
+}
+
 class TweeParserTests: XCTestCase {
     
     func testBasicParse() {
@@ -20,11 +31,11 @@ class TweeParserTests: XCTestCase {
             Some more text
         """)
         
-        XCTAssertEqual(story.passages.count, 2)
-        XCTAssertEqual(story.passages["Passage1"]!.location.lineNumber, 1)
-        XCTAssertEqual(story.passages["Passage2"]!.location.lineNumber, 5)
-        XCTAssertNil(story.passages["Passage1"]!.location.filename)
-        XCTAssertNil(story.passages["Passage2"]!.location.filename)
+        XCTAssertEqual(story.passageCount, 2)
+        XCTAssertEqual(story.passagesByName["Passage1"]!.location.lineNumber, 1)
+        XCTAssertEqual(story.passagesByName["Passage2"]!.location.lineNumber, 5)
+        XCTAssertNil(story.passagesByName["Passage1"]!.location.filename)
+        XCTAssertNil(story.passagesByName["Passage2"]!.location.filename)
         XCTAssertNil(story.startPassage)
     }
 
@@ -58,7 +69,7 @@ class TweeParserTests: XCTestCase {
             After outer else
         """)
 
-        XCTAssertEqual(story.passages.count, 5)
+        XCTAssertEqual(story.passageCount, 5)
         XCTAssertNil(story.startPassage)
     }
     
@@ -74,9 +85,10 @@ class TweeParserTests: XCTestCase {
             Chose 2
         """)
         
-        XCTAssertEqual(story.passages.count, 3)
+        XCTAssertEqual(story.passageCount, 3)
         XCTAssertNotNil(story.startPassage)
         XCTAssertEqual(story.startPassage!.name, "Start")
+        XCTAssert(story.firstPassage === story.startPassage)
     }
 
     func testTextOutsidePassage() {
