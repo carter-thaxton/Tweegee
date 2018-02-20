@@ -8,21 +8,16 @@
 
 import Foundation
 
-typealias Dict = [String: Any]
+typealias Dict = NSDictionary
 typealias DictArr = [Dict]
 
 func toJSON(story: TweeStory) -> Dict {
-    var result = Dict()
-    result["start"] = "Start"
-    result["passageCount"] = story.passageCount
-
     var passages = DictArr()
     for passage in story.passagesInOrder {
         passages.append(passage.toJSON())
     }
-    result["passages"] = passages
 
-    return result
+    return ["start": "Start", "passageCount": story.passageCount, "passages": passages]
 }
 
 protocol ToJSON {
