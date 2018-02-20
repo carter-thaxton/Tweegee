@@ -131,7 +131,7 @@ class TweePassage : TweeStatement, NestableStatement {
 
     // For convenience, if this passages contains a single TextPassage, return it
     func getSingleTextStatement() -> TweeTextStatement? {
-        if block.statements.count == 1 {
+        if block.statements.count >= 1 {
             if let stmt = block.statements[0] as? TweeTextStatement {
                 return stmt
             }
