@@ -8,7 +8,14 @@
 
 import Foundation
 
-class TweeStory {
+typealias Dict = [String:Any]
+typealias DictArr = [Dict]
+
+protocol ToJSON {
+    func toJSON() -> Dict
+}
+
+class TweeStory : ToJSON {
     var passagesByName = [String : TweePassage]()
     var passagesInOrder = [TweePassage]()
     
@@ -27,6 +34,15 @@ class TweeStory {
         }
         passagesByName[passage.name] = passage
         passagesInOrder.append(passage)
+    }
+
+    func toJSON() -> Dict {
+        var passages = DictArr()
+        for passage in passagesInOrder {
+            passages.append(passage.toJSON())
+        }
+        
+        return ["start": "Start", "passageCount": passageCount, "passages": passages]
     }
 }
 
@@ -53,11 +69,15 @@ class TweeStory {
 //    cond (expr)
 //    block
 
-class TweeStatement {
+class TweeStatement : ToJSON {
     let location : TweeLocation
     
     init(location: TweeLocation) {
         self.location = location
+    }
+
+    func toJSON() -> Dict {
+        fatalError("Cannot call toJSON() on top-level twee statement")
     }
 }
 
@@ -92,10 +112,20 @@ class TweePassage : TweeStatement, NestableStatement {
         self.tags = tags
         super.init(location: location)
     }
+
+    override func toJSON() -> Dict {
+        var statements = DictArr()
+        for stmt in self.block.statements {
+            statements.append(stmt.toJSON())
+        }
+        return ["name": self.name, "tags": self.tags, "statements": statements]
+    }
 }
 
-
 class TweeNewlineStatement : TweeStatement {
+    override func toJSON() -> Dict {
+        return ["type": "newline"]
+    }
 }
 
 class TweeTextStatement : TweeStatement {
@@ -104,6 +134,10 @@ class TweeTextStatement : TweeStatement {
     init(location: TweeLocation, text: String) {
         self.text = text
         super.init(location: location)
+    }
+
+    override func toJSON() -> Dict {
+        return ["type": "text", "text": self.text]
     }
 }
 
@@ -116,10 +150,18 @@ class TweeLinkStatement : TweeStatement {
         self.title = title
         super.init(location: location)
     }
+
+    override func toJSON() -> Dict {
+        return ["type": "link", "name": self.name, "title": self.title ?? NSNull()]
+    }
 }
 
 class TweeChoiceStatement : TweeStatement {
     var choices = [TweeLinkStatement]()
+
+    override func toJSON() -> Dict {
+        return ["type": "choice"]
+    }
 }
 
 class TweeSetStatement : TweeStatement {
@@ -131,6 +173,10 @@ class TweeSetStatement : TweeStatement {
         self.expression = expression
         super.init(location: location)
     }
+
+    override func toJSON() -> Dict {
+        return ["type": "set"]
+    }
 }
 
 class TweeExpressionStatement : TweeStatement {
@@ -139,6 +185,10 @@ class TweeExpressionStatement : TweeStatement {
     init(location: TweeLocation, expression: TweeExpression) {
         self.expression = expression
         super.init(location: location)
+    }
+
+    override func toJSON() -> Dict {
+        return ["type": "expression"]
     }
 }
 
@@ -171,6 +221,10 @@ class TweeIfStatement : TweeStatement, NestableStatement {
     func addElseIf(condition: TweeExpression) -> TweeCodeBlock {
         clauses.append(IfClause(condition: condition))
         return clauses.last!.block
+    }
+
+    override func toJSON() -> Dict {
+        return ["type": "if"]
     }
 }
 

@@ -30,7 +30,7 @@ func runParse(filename: String) {
         print("Parsed \(story.passageCount) passages")
         print("Lexed \(parser.numTokensParsed) tokens")
         
-        let data = toJSON(story: story)
+        let data = story.toJSON()
         print(JSON(data))
         
     } catch let error as TweeErrorLocation {
