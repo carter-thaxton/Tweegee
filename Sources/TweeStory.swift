@@ -20,11 +20,15 @@ class TweeStory : AsJson {
     var passagesInOrder = [TweePassage]()
     
     var passageCount : Int { return passagesInOrder.count }
+    
+    var startPassageName : String = "Start"
+    var title : String?
+    var author : String?
 
     var startPassage : TweePassage? {
         // For now, don't support Twee2Settings to specify the start passage.
         // Just hardcode to use "Start" as the passage name.
-        return passagesByName["Start"]
+        return passagesByName[startPassageName]
     }
 
     func addPassage(passage: TweePassage) throws {
@@ -35,6 +39,18 @@ class TweeStory : AsJson {
         passagesByName[passage.name] = passage
         passagesInOrder.append(passage)
     }
+    
+    func removePassage(name: String) -> TweePassage? {
+        if let passage = passagesByName.removeValue(forKey: name) {
+            if let index = passagesInOrder.index(where: { $0 === passage }) {
+                passagesInOrder.remove(at: index)
+            } else {
+                fatalError("Passage found by name, but not in passagesInOrder: \(name)")
+            }
+            return passage
+        }
+        return nil
+    }
 
     func asJson() -> Dict {
         var passages = DictArr()
@@ -42,7 +58,7 @@ class TweeStory : AsJson {
             passages.append(passage.asJson())
         }
         
-        return ["start": "Start", "passageCount": passageCount, "passages": passages]
+        return ["title": title ?? NSNull(), "author": author ?? NSNull(), "start": startPassageName, "passageCount": passageCount, "passages": passages]
     }
 }
 
@@ -111,6 +127,16 @@ class TweePassage : TweeStatement, NestableStatement {
         self.position = position
         self.tags = tags
         super.init(location: location)
+    }
+
+    // For convenience, if this passages contains a single TextPassage, return it
+    func getSingleTextStatement() -> TweeTextStatement? {
+        if block.statements.count == 1 {
+            if let stmt = block.statements[0] as? TweeTextStatement {
+                return stmt
+            }
+        }
+        return nil
     }
 
     override func asJson() -> Dict {

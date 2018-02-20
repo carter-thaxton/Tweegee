@@ -42,7 +42,7 @@ func runParse(filename: String) {
 }
 
 func toJsonString(_ data: Any) throws -> String {
-    let serialized = try JSONSerialization.data(withJSONObject: data, options: .prettyPrinted)
+    let serialized = try JSONSerialization.data(withJSONObject: data, options: [.prettyPrinted, .sortedKeys])
     return String(data: serialized, encoding: .utf8)!
 }
 

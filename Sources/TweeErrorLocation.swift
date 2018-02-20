@@ -27,6 +27,7 @@ enum TweeError : Equatable {
     case UnexpectedExpression
     case InvalidExpression
     case UnrecognizedMacro
+    case InvalidTwee2Settings
 }
 
 struct TweeLocation {

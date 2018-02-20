@@ -45,9 +45,40 @@ class TweeParser {
 
     private func finish() throws -> TweeStory {
         try closePassageAndEnsureNoOpenStatements()
+        try parseSpecialPassages()
         return story
     }
-    
+
+    private func parseSpecialPassages() throws {
+        // ::StoryTitle
+        // Title of Story
+        if let titlePassage = story.removePassage(name: "StoryTitle") {
+            if let title = titlePassage.getSingleTextStatement()?.text {
+                story.title = title
+            }
+        }
+
+        // ::StoryAuthor
+        // Author of Story
+        if let authorPassage = story.removePassage(name: "StoryAuthor") {
+            if let author = authorPassage.getSingleTextStatement()?.text {
+                story.author = author
+            }
+        }
+        
+        // ::Twee2Settings
+        // @story_start_name = 'Start'
+        if let twee2SettingsPassage = story.removePassage(name: "Twee2Settings") {
+            if let settings = twee2SettingsPassage.getSingleTextStatement() {
+                if let result = settings.text.match(pattern: "^@story_start_name\\s*=\\s*['\"]([^.\"]*)['\"];?$") {
+                    story.startPassageName = result[1]!
+                } else {
+                    throw TweeErrorLocation(error: .InvalidTwee2Settings, location: settings.location, message: "@story_start_name found in Twee2Settings passage, but has invalid syntax")
+                }
+            }
+        }
+    }
+
     private func closePassageAndEnsureNoOpenStatements() throws {
         if let stmt = currentStatement {
             if stmt is TweePassage {

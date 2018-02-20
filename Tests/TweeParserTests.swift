@@ -229,8 +229,37 @@ class TweeParserTests: XCTestCase {
             <<choice [[Missing close|missing]] | <<choice [[This is ok|itsok]]>>
         """, expectedError: .InvalidChoiceSyntax, lineNumber: 3)
     }
-
     
+    func testSpecialPassages() {
+        let story = parse("""
+            ::StoryTitle
+            The Time Machine
+
+            ::StoryAuthor
+            H.G. Wells
+
+            ::Twee2Settings
+            @story_start_name = 'TheEnd'
+
+            ::TheEnd
+            In the beginning...
+        """)
+        
+        XCTAssertEqual(story.title, "The Time Machine")
+        XCTAssertEqual(story.author, "H.G. Wells")
+        XCTAssertEqual(story.startPassageName, "TheEnd")
+        XCTAssertEqual(story.startPassage?.getSingleTextStatement()?.text, "In the beginning...")
+        XCTAssertEqual(story.passageCount, 1)  // after removing special passages, only one passage remains
+    }
+
+    func testInvalidTwee2Settings() {
+        checkParserFails("""
+            ::Twee2Settings
+            @story_start_name = Fail!
+        """, expectedError: .InvalidTwee2Settings, lineNumber: 2)
+    }
+    
+
     // MARK: Helper methods
 
     func parse(_ string : String) -> TweeStory {

@@ -1,6 +1,9 @@
 ::StoryTitle
 Test Story
 
+::StoryAuthor
+Carter Thaxton
+
 ::Start [start begin] <616,302>
 I'd like to test using Twine 2.
 i <8 u
