@@ -16,7 +16,8 @@ class TweeParser {
     let story = TweeStory()
     var currentPassage : TweePassage?
     var numTokensParsed = 0
-    
+    var lineHasText = false
+
     var currentStatements = [NestableStatement]()
     var currentStatement : NestableStatement? { return currentStatements.last }
     var currentCodeBlock : TweeCodeBlock? { return currentStatement?.block }
@@ -114,6 +115,7 @@ class TweeParser {
             currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
             currentStatements.append(currentPassage!)
             try story.addPassage(passage: currentPassage!)
+            lineHasText = false  // by definition, starts a new line
 
         case .Comment(let comment):
             // ignore comments
@@ -121,16 +123,11 @@ class TweeParser {
             break
 
         case .Newline:
-            if let stmt = currentCodeBlock?.last {
-                switch stmt {
-                // ignore these
-                case is TweeNewlineStatement: break
-                case is TweeChoiceStatement: break
-
-                default:
-                    currentCodeBlock!.add(TweeNewlineStatement(location: location))
-                }
+            if currentCodeBlock != nil && lineHasText {
+                // add newline at end of lines with any text
+                currentCodeBlock!.add(TweeNewlineStatement(location: location))
             }
+            lineHasText = false  // start new line
 
         case .Text(let text):
             try ensureCodeBlock()
@@ -150,6 +147,7 @@ class TweeParser {
             } else {
                 let stmt = TweeTextStatement(location: location, text: text)
                 currentCodeBlock!.add(stmt)
+                lineHasText = true  // add some text to line
             }
 
         case .Link(let name, let title):
