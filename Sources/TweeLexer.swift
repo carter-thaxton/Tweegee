@@ -64,7 +64,7 @@ private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 
 
 class TweeLexer {
-    let lettersAndSlash = CharacterSet.letters.union(CharacterSet(charactersIn: "/"))
+    let macroNameCharacters = CharacterSet.letters.union(CharacterSet(charactersIn: "/="))
 
     func lex(filename: String, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
@@ -83,7 +83,7 @@ class TweeLexer {
 
     func lex(line: String, location: TweeLocation, includeNewline: Bool, block handleToken: (TweeToken, TweeLocation) throws -> Void) throws {
         if let matches = line.match(regex: passageHeaderRegex) {
-            let name = matches[1]!.trimmingCharacters(in: .whitespaces)
+            let name = matches[1]!.trimmingWhitespace()
             let tags = matches[2]
             let posx = matches[3]
             let posy = matches[4]
@@ -97,7 +97,7 @@ class TweeLexer {
             
             try handleToken(.Passage(name: name, tags: tagsArr, position: pos), location)
         } else {
-            let text = line.trimmingCharacters(in: .whitespaces)
+            let text = line.trimmingWhitespace()
             if !text.isEmpty {
                 var accText = ""
                 
@@ -116,7 +116,7 @@ class TweeLexer {
                             let link = try? s.scan(upTo: "]]")
                             if link != nil && link! != nil {
                                 // split on pipe, and trim each component
-                                let nameAndTitle = link!!.components(separatedBy: "|").map { $0.trimmingCharacters(in: .whitespaces) }
+                                let nameAndTitle = link!!.components(separatedBy: "|").map { $0.trimmingWhitespace() }
                                 if nameAndTitle.count == 2 {
                                     try handleToken(.Link(name: nameAndTitle[1], title: nameAndTitle[0]), location)
                                 } else if nameAndTitle.count == 1 {
@@ -135,33 +135,33 @@ class TweeLexer {
                             }
                             let macro = try? s.scan(upTo: ">>")
                             if macro != nil && macro! != nil {
-                                let text = macro!!.trimmingCharacters(in: .whitespaces)
+                                let text = macro!!.trimmingWhitespace()
                                 if text.isEmpty {
                                     throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location, message: "Found empty macro")
-                                } else if !lettersAndSlash.contains(text.unicodeScalars.first!) {
-                                    // doesn't start with a letter or slash, so it's a raw expression
-                                    try handleToken(.Macro(name: nil, expr: text), location)
-                                } else {
-                                    // starts with a latter, split on name and rest of expression
+                                } else if macroNameCharacters.contains(text.unicodeScalars.first!) {
+                                    // starts with a macro, split on whitespace, giving name and rest of expression
                                     let nameAndExpr = text.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
                                     if nameAndExpr.count >= 2 {
                                         try handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
                                     } else {
                                         try handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
                                     }
+                                } else {
+                                    // doesn't start with a macro name, so it's a raw expression
+                                    try handleToken(.Macro(name: nil, expr: text), location)
                                 }
                                 s.match(">>")
                             } else {
                                 throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location, message: "Invalid macro syntax.  Missing >>")
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
-                            accText = accText.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace
+                            accText = accText.trimmingTrailingWhitespace()
                             if !accText.isEmpty {
                                 try handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             s.match("//")
-                            let comment = s.remainder.trimmingCharacters(in: .whitespaces)
+                            let comment = s.remainder.trimmingWhitespace()
                             try handleToken(.Comment(comment), location)
                             s.peekAtEnd()
                         } else {
@@ -171,7 +171,7 @@ class TweeLexer {
                     }
                 }
                 
-                accText = accText.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace
+                accText = accText.trimmingTrailingWhitespace()
                 if !accText.isEmpty {
                     try handleToken(.Text(accText), location)
                 }

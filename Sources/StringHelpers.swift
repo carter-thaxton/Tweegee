@@ -1,5 +1,5 @@
 //
-//  StringMatch.swift
+//  StringHelpers.swift
 //  Tweegee
 //
 //  Created by Carter Thaxton on 1/16/18.
@@ -28,19 +28,19 @@ extension String {
 }
 
 
-fileprivate var expressions = [String: NSRegularExpression]()
+fileprivate var regularExpressions = [String: NSRegularExpression]()
 
 extension String {
     func match(pattern: String) -> [String?]? {
-        let expression: NSRegularExpression
-        if let exists = expressions[pattern] {
-            expression = exists
+        let regex: NSRegularExpression
+        if let exists = regularExpressions[pattern] {
+            regex = exists
         } else {
-            expression = try! NSRegularExpression(pattern: pattern, options: [])
-            expressions[pattern] = expression
+            regex = try! NSRegularExpression(pattern: pattern, options: [])
+            regularExpressions[pattern] = regex
         }
         
-        return match(regex: expression)
+        return match(regex: regex)
     }
     
     func match(regex: NSRegularExpression) -> [String?]? {
@@ -60,5 +60,16 @@ extension String {
         }
         
         return results
+    }
+}
+
+
+extension String {
+    func trimmingWhitespace() -> String {
+        return self.trimmingCharacters(in: .whitespaces)
+    }
+
+    func trimmingTrailingWhitespace() -> String {
+        return self.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace
     }
 }

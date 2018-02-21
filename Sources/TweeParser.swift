@@ -123,17 +123,13 @@ class TweeParser {
             break
 
         case .Newline:
-            if currentCodeBlock != nil && lineHasText {
-                // add newline at end of lines with any text
-                currentCodeBlock!.add(TweeNewlineStatement(location: location))
-            }
-            lineHasText = false  // start new line
+            endLineOfText(location: location)
 
         case .Text(let text):
             try ensureCodeBlock()
             
             // Special case for | separating links
-            if text.trimmingCharacters(in: .whitespaces) == "|" {
+            if text.trimmingWhitespace() == "|" {
                 if let link = currentCodeBlock?.last as? TweeLinkStatement {
                     // convert previous link to list of choices
                     currentCodeBlock!.pop()
@@ -158,6 +154,7 @@ class TweeParser {
             if let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement {
                 choiceStmt.choices.append(stmt)
             } else {
+                endLineOfText(location: location)  // end any text before following a link
                 currentCodeBlock!.add(stmt)
             }
 
@@ -172,6 +169,9 @@ class TweeParser {
                 switch name! {
                 case "if", "else", "elseif", "endif", "/if":
                     try parseIf(name: name!, expr: expr, location: location)
+
+                case "delay", "enddelay", "/delay":
+                    try parseDelay(name: name!, expr: expr, location: location)
 
                 case "set":
                     try parseSet(expr: expr, location: location)
@@ -191,6 +191,14 @@ class TweeParser {
         }
     }
     
+    private func endLineOfText(location: TweeLocation) {
+        if currentCodeBlock != nil && lineHasText {
+            // add newline at end of lines with any text
+            currentCodeBlock!.add(TweeNewlineStatement(location: location))
+        }
+        lineHasText = false  // start new line
+    }
+    
     private func parseIf(name: String, expr: String?, location: TweeLocation) throws {
         switch name {
         case "if":
@@ -201,6 +209,7 @@ class TweeParser {
             let ifStmt = TweeIfStatement(location: location, condition: cond)
             currentCodeBlock!.add(ifStmt)
             currentStatements.append(ifStmt)
+            assert(currentCodeBlock === ifStmt.clauses[0].block)
 
         case "else":
             if expr != nil {
@@ -243,6 +252,34 @@ class TweeParser {
         }
     }
 
+    private func parseDelay(name: String, expr: String?, location: TweeLocation) throws {
+        switch name {
+        case "delay":
+            guard let expr = expr else {
+                throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for delay")
+            }
+            let delayExpr = try parse(expression: expr, location: location, for: "delay")
+            let stmt = TweeDelayStatement(location: location, expression: delayExpr)
+            endLineOfText(location: location)  // end any text before delay
+            currentCodeBlock!.add(stmt)
+            currentStatements.append(stmt)
+            assert(currentCodeBlock === stmt.block)
+
+        case "enddelay", "/delay":
+            if expr != nil {
+                throw TweeErrorLocation(error: .UnexpectedExpression, location: location, message: "Unexpected expression in enddelay")
+            }
+            if !(currentStatement is TweeDelayStatement) {
+                throw TweeErrorLocation(error: .MissingDelay, location: location, message: "Found enddelay without corresponding delay")
+            }
+            _ = currentStatements.popLast()
+            lineHasText = false  // don't need a newline, unless some text appears after enddelay
+
+        default:
+            fatalError("Unexpected macro for delay: \(name)")
+        }
+    }
+    
     private func parseSet(expr: String?, location: TweeLocation) throws {
         guard let expr = expr else {
             throw TweeErrorLocation(error: .MissingExpression, location: location, message: "No expression given for set")

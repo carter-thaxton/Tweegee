@@ -53,7 +53,11 @@ class TweeParserTests: XCTestCase {
                     <<if $test > 6>>Not this<<else>>Then this<<endif>>
                     [[Passage2]]
                 <<else>>
-                    <<if $test > 6>>Not this either [[Passage3]]<<else>>Then this<<endif>>
+                    <<if $test > 6>>
+                        Not this either [[Passage3]]
+                    <<else>>
+                        Then this
+                    <<endif>>
                     [[Passage4]]
                 <<endif>>
             <<else>>
@@ -76,7 +80,7 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(story.passageCount, 5)
         XCTAssertNil(story.startPassage)
 
-        checkCodeForPassage(story, "Passage1", "SI(TNI(I(T:T)NL:I(TL:T)NL):L)")
+        checkCodeForPassage(story, "Passage1", "SI(TNI(I(T:T)NL:I(TNL:TN)L):L)")
 
         checkCodeForPassage(story, "Passage2", "TN")
         checkCodeForPassage(story, "Passage3", "TN")
@@ -205,9 +209,9 @@ class TweeParserTests: XCTestCase {
             ::Start
             <<if true>>
                 <<if false>>
-                Not here
+                    Not here
                 <<elseif true>>
-                YES
+                    YES
                 <<endif>>
             <<else>>
                 Not here either
@@ -237,6 +241,20 @@ class TweeParserTests: XCTestCase {
         // elephant!
         // On the horizon, I see just a smudge.
         checkCodeForPassage(story, "Start", "TI(T:T)TNTI(TNTNTNTN:T)TN")
+    }
+    
+    func testDelay() {
+        let story = parse("""
+            ::Start
+            Text
+            <<delay "10m">>I'm waiting for you<<enddelay>>
+            More text
+            Before delay <<delay "10s">>In the delay<<enddelay>> After delay
+        """)
+
+        checkCodeForPassage(story, "Start", "TND(T)TNTND(T)TN")  // Note that it adds a newline after "Before delay"
+        let delayStmt = story.startPassage!.block.statements[2] as! TweeDelayStatement
+        XCTAssertEqual(delayStmt.expression.string, "\"10m\"")
     }
 
     func testChoiceSyntax() {
@@ -304,6 +322,9 @@ class TweeParserTests: XCTestCase {
             ::Twee2Settings
             @story_start_name = 'TheEnd'
 
+            ::Start
+            Not the start
+
             ::TheEnd
             In the beginning...
         """)
@@ -312,7 +333,7 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(story.author, "H.G. Wells")
         XCTAssertEqual(story.startPassageName, "TheEnd")
         XCTAssertEqual(story.startPassage?.getSingleTextStatement()?.text, "In the beginning...")
-        XCTAssertEqual(story.passageCount, 1)  // after removing special passages, only one passage remains
+        XCTAssertEqual(story.passageCount, 2)  // after removing special passages, only two passages remain  (Start, TheEnd)
     }
 
     func testInvalidTwee2Settings() {
@@ -373,6 +394,10 @@ class TweeParserTests: XCTestCase {
                 result += "L"
             case is TweeChoiceStatement:
                 result += "C"
+            case let delayStmt as TweeDelayStatement:
+                result += "D("
+                result += codeBlockToPattern(delayStmt.block)
+                result += ")"
             case let ifStmt as TweeIfStatement:
                 result += "I("
                 result += ifStmt.clauses.map({ codeBlockToPattern($0.block) }).joined(separator: ",")

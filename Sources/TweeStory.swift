@@ -72,6 +72,7 @@ class TweeStory : AsJson {
 //    choice ([link])
 //    let (var, expr)
 //    if ([ifcond], else-block)
+//    delay (expr, block)
 //    expr  // when used like this, represents use of expression in template
 
 //  ifcond ->
@@ -219,11 +220,25 @@ class TweeExpressionStatement : TweeStatement {
     }
 }
 
+class TweeDelayStatement : TweeStatement, NestableStatement {
+    let expression  : TweeExpression
+    let block = TweeCodeBlock()
+    
+    init(location: TweeLocation, expression: TweeExpression) {
+        self.expression = expression
+        super.init(location: location)
+    }
+
+    override func asJson() -> Dict {
+        return ["_type": "delay", "expression": expression.string, "statements": block.asJson()]
+    }
+}
+
 class TweeIfStatement : TweeStatement, NestableStatement {
     struct IfClause {
         let location : TweeLocation
         let condition : TweeExpression
-        var block = TweeCodeBlock()
+        let block = TweeCodeBlock()
         
         init(location: TweeLocation, condition: TweeExpression) {
             self.location = location
@@ -233,7 +248,7 @@ class TweeIfStatement : TweeStatement, NestableStatement {
     
     struct ElseClause {
         let location : TweeLocation
-        var block = TweeCodeBlock()
+        let block = TweeCodeBlock()
         
         init(location: TweeLocation) {
             self.location = location
