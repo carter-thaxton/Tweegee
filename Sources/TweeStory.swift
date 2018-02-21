@@ -147,7 +147,7 @@ class TweePassage : TweeStatement, NestableStatement {
 
 class TweeNewlineStatement : TweeStatement {
     override func asJson() -> Dict {
-        return ["type": "newline"]
+        return ["_type": "newline"]
     }
 }
 
@@ -160,7 +160,7 @@ class TweeTextStatement : TweeStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "text", "text": self.text]
+        return ["_type": "text", "text": self.text]
     }
 }
 
@@ -175,7 +175,7 @@ class TweeLinkStatement : TweeStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "link", "name": self.name, "title": self.title ?? NSNull()]
+        return ["_type": "link", "name": self.name, "title": self.title ?? NSNull()]
     }
 }
 
@@ -187,7 +187,7 @@ class TweeChoiceStatement : TweeStatement {
         for choice in choices {
             links.append(choice.asJson())
         }
-        return ["type": "choice", "choices": links]
+        return ["_type": "choice", "choices": links]
     }
 }
 
@@ -202,7 +202,7 @@ class TweeSetStatement : TweeStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "set", "variable": variable, "expression": expression.string]
+        return ["_type": "set", "variable": variable, "expression": expression.string]
     }
 }
 
@@ -215,7 +215,7 @@ class TweeExpressionStatement : TweeStatement {
     }
 
     override func asJson() -> Dict {
-        return ["type": "expression", "expression": expression.string]
+        return ["_type": "expression", "expression": expression.string]
     }
 }
 
@@ -275,7 +275,7 @@ class TweeIfStatement : TweeStatement, NestableStatement {
         if elseClause != nil {
             elseData = elseClause!.block.asJson()
         }
-        return ["type": "if", "clauses": clauseData, "else": elseData]
+        return ["_type": "if", "clauses": clauseData, "else": elseData]
     }
 }
 
