@@ -71,17 +71,17 @@ class TweeLexer {
         try lex(string: str, filename: filename, block: block)
     }
 
-    func lex(string: String, filename: String? = nil, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
+    func lex(string: String, filename: String? = nil, includeNewlines: Bool = true, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
         var location = TweeLocation(filename: filename, line: nil, lineNumber: 1)
         let lines = string.components(separatedBy: .newlines)  // TODO: consider enumerateLines, which doesn't work on Linux
         for line in lines {
             location.line = line
-            try self.lex(line: line, location: location, block: block)
+            try self.lex(line: line, location: location, includeNewline: includeNewlines, block: block)
             location.lineNumber += 1
         }
     }
 
-    func lex(line: String, location: TweeLocation, block handleToken: (TweeToken, TweeLocation) throws -> Void) throws {
+    func lex(line: String, location: TweeLocation, includeNewline: Bool, block handleToken: (TweeToken, TweeLocation) throws -> Void) throws {
         if let matches = line.match(regex: passageHeaderRegex) {
             let name = matches[1]!.trimmingCharacters(in: .whitespaces)
             let tags = matches[2]
@@ -176,7 +176,9 @@ class TweeLexer {
                     try handleToken(.Text(accText), location)
                 }
             }
-            try handleToken(.Newline, location)
+            if includeNewline {
+                try handleToken(.Newline, location)
+            }
         }
     }
 }

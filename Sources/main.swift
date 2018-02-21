@@ -41,15 +41,6 @@ func runParse(filename: String) {
     }
 }
 
-func toJsonString(_ data: Any) throws -> String {
-    var opts : JSONSerialization.WritingOptions = [.prettyPrinted]
-    if #available(macOS 10.13, *) {
-        opts.formUnion(.sortedKeys)
-    }
-    let serialized = try JSONSerialization.data(withJSONObject: data, options: opts)
-    return String(data: serialized, encoding: .utf8)!
-}
-
 func showHelp() -> Never {
     print("""
     Usage: tweegee [--lexOnly] <filename>

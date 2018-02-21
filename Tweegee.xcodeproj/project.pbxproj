@@ -27,6 +27,8 @@
 		AD3F5148202BD3ED00F1BE3C /* TweeErrorLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */; };
 		AD83BCD9203BA33400D06899 /* TweeExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCD8203BA33400D06899 /* TweeExpression.swift */; };
 		AD83BCDA203BA33400D06899 /* TweeExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCD8203BA33400D06899 /* TweeExpression.swift */; };
+		AD83BCE2203CF60B00D06899 /* JSONHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */; };
+		AD83BCE3203CF60B00D06899 /* JSONHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -58,6 +60,7 @@
 		AD3F5143202BCC8C00F1BE3C /* TweeStory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeStory.swift; sourceTree = "<group>"; };
 		AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeErrorLocation.swift; sourceTree = "<group>"; };
 		AD83BCD8203BA33400D06899 /* TweeExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeExpression.swift; sourceTree = "<group>"; };
+		AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONHelpers.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -108,6 +111,7 @@
 				AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */,
 				AD3F5134200EA8C900F1BE3C /* StringMatch.swift */,
 				AD3F5137201042AC00F1BE3C /* StringScanner.swift */,
+				AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -225,6 +229,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */,
+				AD83BCE2203CF60B00D06899 /* JSONHelpers.swift in Sources */,
 				AD3F513F202BC6B500F1BE3C /* TweeParser.swift in Sources */,
 				AD3F5144202BCC8C00F1BE3C /* TweeStory.swift in Sources */,
 				AD3F5147202BD3ED00F1BE3C /* TweeErrorLocation.swift in Sources */,
@@ -239,6 +244,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				AD83BCE3203CF60B00D06899 /* JSONHelpers.swift in Sources */,
 				AD83BCDA203BA33400D06899 /* TweeExpression.swift in Sources */,
 				AD3F5145202BCC8C00F1BE3C /* TweeStory.swift in Sources */,
 				AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */,

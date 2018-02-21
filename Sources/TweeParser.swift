@@ -121,8 +121,16 @@ class TweeParser {
             break
 
         case .Newline:
-            // TODO: figure this out
-            break
+            if let stmt = currentCodeBlock?.last {
+                switch stmt {
+                // ignore these
+                case is TweeNewlineStatement: break
+                case is TweeChoiceStatement: break
+
+                default:
+                    currentCodeBlock!.add(TweeNewlineStatement(location: location))
+                }
+            }
 
         case .Text(let text):
             try ensureCodeBlock()
@@ -261,7 +269,7 @@ class TweeParser {
         // This is a weird one.  Just lex the contents of a choice macro, as though the choice didn't even exist.
         // Technically this will allow just about anything inside the macro, but it works well enough.  We don't plan on using this going forward.
         do {
-            try lexer.lex(string: expr, block: handleToken)
+            try lexer.lex(string: expr, includeNewlines: false, block: handleToken)
         } catch let error as TweeErrorLocation {
             throw TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(error.message)")
         }

@@ -1,4 +1,5 @@
 .DS_Store
 /.build
 /Packages
-*.xcodeproj/**/UserInterfaceState.xcuserstate
+xcuserdata/
+*.xcuserstate

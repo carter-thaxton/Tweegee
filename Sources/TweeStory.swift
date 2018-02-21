@@ -8,13 +8,6 @@
 
 import Foundation
 
-typealias Dict = [String:Any]
-typealias DictArr = [Dict]
-
-protocol AsJson {
-    func asJson() -> Dict
-}
-
 class TweeStory : AsJson {
     var passagesByName = [String : TweePassage]()
     var passagesInOrder = [TweePassage]()
