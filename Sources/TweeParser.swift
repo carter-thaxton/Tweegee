@@ -188,7 +188,7 @@ class TweeParser {
                     // ignore these for now
                     break
 
-                case "include":
+                case "include", "display":
                     // TODO: support this
                     break
 
