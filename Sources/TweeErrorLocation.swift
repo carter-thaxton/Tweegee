@@ -23,6 +23,7 @@ enum TweeError : Equatable {
     case MissingIf
     case MissingEndIf
     case DuplicateElse
+    case MissingEndSilently
     case MissingDelay
     case MissingExpression
     case UnexpectedExpression

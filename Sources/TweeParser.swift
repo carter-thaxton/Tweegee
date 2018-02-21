@@ -17,6 +17,7 @@ class TweeParser {
     var currentPassage : TweePassage?
     var numTokensParsed = 0
     var lineHasText = false
+    var silently = false
 
     var currentStatements = [NestableStatement]()
     var currentStatement : NestableStatement? { return currentStatements.last }
@@ -82,6 +83,10 @@ class TweeParser {
 
     private func closePassageAndEnsureNoOpenStatements() throws {
         if let stmt = currentStatement {
+            if silently {
+                // simply use passage location
+                throw TweeErrorLocation(error: .MissingEndSilently, location: stmt.location, message: "Passage ended without closing endsilently")
+            }
             if stmt is TweePassage {
                 if currentStatements.count != 1 {
                     fatalError("TweePassage found in nested position")
@@ -116,6 +121,7 @@ class TweeParser {
             currentStatements.append(currentPassage!)
             try story.addPassage(passage: currentPassage!)
             lineHasText = false  // by definition, starts a new line
+            silently = false
 
         case .Comment(let comment):
             // ignore comments
@@ -140,7 +146,7 @@ class TweeParser {
                     // already a list of choices, simply ignore the |
                     _ = choices
                 }
-            } else {
+            } else if !silently {
                 let stmt = TweeTextStatement(location: location, text: text)
                 currentCodeBlock!.add(stmt)
                 lineHasText = true  // add some text to line
@@ -180,14 +186,12 @@ class TweeParser {
                 case "choice":
                     try parseChoice(expr: expr, location: location)
 
-                case "silently", "endsilently", "/silently":
-                    // ignore these for now
-                    break
+                case "silently":
+                    silently = true
 
-                case "d", "endd", "/d":
-                    // ignore these for now
-                    break
-                
+                case "endsilently", "/silently":
+                    silently = false
+
                 case "textinput":
                     // TODO: support this
                     break
@@ -196,6 +200,10 @@ class TweeParser {
                     // TODO: support this
                     break
 
+                case "d", "endd", "/d":
+                    // ignore these for now
+                    break
+                    
                 default:
                     throw TweeErrorLocation(error: .UnrecognizedMacro, location: location, message: "Unrecognized macro: \(name!)")
                 }

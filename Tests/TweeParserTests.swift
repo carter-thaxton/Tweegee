@@ -203,7 +203,7 @@ class TweeParserTests: XCTestCase {
             <<endif>>
         """, expectedError: .DuplicateElse, lineNumber: 6)
     }
-
+    
     func testNestedIfs() {
         let story = parse("""
             ::Start
@@ -241,6 +241,27 @@ class TweeParserTests: XCTestCase {
         // elephant!
         // On the horizon, I see just a smudge.
         checkCodeForPassage(story, "Start", "TI(T:T)TNTI(TNTNTNTN:T)TN")
+    }
+    
+    func testSilently() {
+        let story = parse("""
+            ::Start
+            I see <<silently>>nothing should be here<<endsilently>> some text.
+        """)
+
+        checkCodeForPassage(story, "Start", "TTN")
+        let text1 = story.startPassage!.block.statements[0] as! TweeTextStatement
+        let text2 = story.startPassage!.block.statements[1] as! TweeTextStatement
+        XCTAssertEqual(text1.text, "I see ")
+        XCTAssertEqual(text2.text, " some text.")
+    }
+    
+    func testMissingEndSilently() {
+        checkParserFails("""
+            ::Start
+            I see <<silently>>nothing should be here
+            It should fail without endsilently
+        """, expectedError: .MissingEndSilently)
     }
     
     func testDelay() {
