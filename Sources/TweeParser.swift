@@ -183,6 +183,10 @@ class TweeParser {
                 case "silently", "endsilently", "/silently":
                     // ignore these for now
                     break
+                
+                case "include":
+                    // TODO: support this
+                    break
 
                 default:
                     throw TweeErrorLocation(error: .UnrecognizedMacro, location: location, message: "Unrecognized macro: \(name!)")
