@@ -187,6 +187,10 @@ class TweeParser {
                 case "d", "endd", "/d":
                     // ignore these for now
                     break
+                
+                case "textinput":
+                    // TODO: support this
+                    break
 
                 case "include", "display":
                     // TODO: support this
