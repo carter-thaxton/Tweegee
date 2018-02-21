@@ -183,7 +183,11 @@ class TweeParser {
                 case "silently", "endsilently", "/silently":
                     // ignore these for now
                     break
-                
+
+                case "d", "endd", "/d":
+                    // ignore these for now
+                    break
+
                 case "include":
                     // TODO: support this
                     break
