@@ -24,11 +24,12 @@ class TweeParserTests: XCTestCase {
     func testBasicParse() {
         let story = parse("""
             ::Passage1
-            <<set $test = 5>>
-            <<if $test is 5>>Say this<<else>>Don't say this<<endif>>
+            Some text
+            Some more text
 
             ::Passage2
-            Some more text
+            <<set $test = 5>>
+            <<if $test is 5>>Say this<<else>>Don't say this<<endif>>
         """)
         
         XCTAssertEqual(story.passageCount, 2)
@@ -37,6 +38,9 @@ class TweeParserTests: XCTestCase {
         XCTAssertNil(story.passagesByName["Passage1"]!.location.filename)
         XCTAssertNil(story.passagesByName["Passage2"]!.location.filename)
         XCTAssertNil(story.startPassage)
+
+        checkCodeForPassage(story, "Passage1", "TNTN")
+        checkCodeForPassage(story, "Passage2", "SI(T:T)N")
     }
 
     func testNestedStatements() {
@@ -71,8 +75,15 @@ class TweeParserTests: XCTestCase {
 
         XCTAssertEqual(story.passageCount, 5)
         XCTAssertNil(story.startPassage)
+
+        checkCodeForPassage(story, "Passage1", "SI(TNI(I(T:T)NL:I(TL:T)NL):L)")
+
+        checkCodeForPassage(story, "Passage2", "TN")
+        checkCodeForPassage(story, "Passage3", "TN")
+        checkCodeForPassage(story, "Passage4", "TN")
+        checkCodeForPassage(story, "Passage5", "TN")
     }
-    
+
     func testStartPassage() {
         let story = parse("""
             ::Start
@@ -89,6 +100,10 @@ class TweeParserTests: XCTestCase {
         XCTAssertNotNil(story.startPassage)
         XCTAssertEqual(story.startPassage!.name, "Start")
         XCTAssert(story.firstPassage === story.startPassage)
+
+        checkCodeForPassage(story, "Start", "C")
+        checkCodeForPassage(story, "Passage1", "TN")
+        checkCodeForPassage(story, "Passage2", "TN")
     }
 
     func testTextOutsidePassage() {
@@ -186,7 +201,7 @@ class TweeParserTests: XCTestCase {
     }
 
     func testNestedIfs() {
-        let _ = parse("""
+        let story = parse("""
             ::Start
             <<if true>>
                 <<if false>>
@@ -199,10 +214,12 @@ class TweeParserTests: XCTestCase {
             <<endif>>
             Some final words
         """)
+
+        checkCodeForPassage(story, "Start", "I(I(TN,TN):TN)TN")
     }
-    
+
     func testNewlinesAndIfs() {
-        let _ = parse("""
+        let story = parse("""
             ::Start
             I see <<if $x>>a bird<<else>>nothing<<endif>>.
             On the horizon, I see <<if $y>>a...
@@ -219,9 +236,9 @@ class TweeParserTests: XCTestCase {
         // big...
         // elephant!
         // On the horizon, I see just a smudge.
-//        XCTFail("TODO")
+        checkCodeForPassage(story, "Start", "TI(T:T)TNTI(TNTNTNTN:T)TN")
     }
-    
+
     func testChoiceSyntax() {
         let story = parse("""
             ::Start
@@ -330,5 +347,44 @@ class TweeParserTests: XCTestCase {
         }
         XCTFail("Expected parser to throw an error")
     }
+    
+    func checkCodeForPassage(_ story: TweeStory, _ passageName: String, _ pattern: String) {
+        guard let passage = story.passagesByName[passageName] else {
+            return XCTFail("Did not find passage named \(passageName)")
+        }
+        let actual = codeBlockToPattern(passage.block)
+        XCTAssertEqual(actual, pattern)
+    }
 
+    // Creates a pattern like "STNTNI(S,TN:TNTN)"
+    func codeBlockToPattern(_ block: TweeCodeBlock) -> String {
+        var result = ""
+        for stmt in block.statements {
+            switch stmt {
+            case is TweeNewlineStatement:
+                result += "N"
+            case is TweeTextStatement:
+                result += "T"
+            case is TweeSetStatement:
+                result += "S"
+            case is TweeExpressionStatement:
+                result += "E"
+            case is TweeLinkStatement:
+                result += "L"
+            case is TweeChoiceStatement:
+                result += "C"
+            case let ifStmt as TweeIfStatement:
+                result += "I("
+                result += ifStmt.clauses.map({ codeBlockToPattern($0.block) }).joined(separator: ",")
+                if let elseClause = ifStmt.elseClause {
+                    result += ":" + codeBlockToPattern(elseClause.block)
+                }
+                result += ")"
+            default:
+                fatalError("Unexpected type of statement: \(stmt)")
+            }
+        }
+        return result
+    }
+    
 }

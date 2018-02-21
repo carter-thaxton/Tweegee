@@ -209,11 +209,11 @@ class TweeParser {
             guard let ifStmt = currentStatement as? TweeIfStatement else {
                 throw TweeErrorLocation(error: .MissingIf, location: location, message: "Found else without corresponding if")
             }
-            if ifStmt.elseBlock != nil {
+            if ifStmt.elseClause != nil {
                 throw TweeErrorLocation(error: .DuplicateElse, location: location, message: "Duplicate else clause")
             }
-            ifStmt.elseBlock = TweeCodeBlock()
-            assert(currentCodeBlock === ifStmt.elseBlock)
+            let elseBlock = ifStmt.addElse(location: location)
+            assert(currentCodeBlock === elseBlock)
 
         case "elseif":
             guard let expr = expr else {
@@ -223,10 +223,10 @@ class TweeParser {
             guard let ifStmt = currentStatement as? TweeIfStatement else {
                 throw TweeErrorLocation(error: .MissingIf, location: location, message: "Found elseif without corresponding if")
             }
-            if ifStmt.elseBlock != nil {
+            if ifStmt.elseClause != nil {
                 throw TweeErrorLocation(error: .DuplicateElse, location: location, message: "Found elseif after else")
             }
-            let elseIfBlock = ifStmt.addElseIf(condition: cond)
+            let elseIfBlock = ifStmt.addElseIf(location: location, condition: cond)
             assert(currentCodeBlock === elseIfBlock)
 
         case "endif", "/if":

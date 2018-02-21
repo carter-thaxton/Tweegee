@@ -221,33 +221,49 @@ class TweeExpressionStatement : TweeStatement {
 
 class TweeIfStatement : TweeStatement, NestableStatement {
     struct IfClause {
+        let location : TweeLocation
         let condition : TweeExpression
         var block = TweeCodeBlock()
         
-        init(condition : TweeExpression) {
+        init(location: TweeLocation, condition: TweeExpression) {
+            self.location = location
             self.condition = condition
+        }
+    }
+    
+    struct ElseClause {
+        let location : TweeLocation
+        var block = TweeCodeBlock()
+        
+        init(location: TweeLocation) {
+            self.location = location
         }
     }
 
     var clauses = [IfClause]()
-    var elseBlock : TweeCodeBlock?
+    var elseClause : ElseClause?
 
     var ifCondition : TweeExpression { return clauses[0].condition }
     var ifBlock : TweeCodeBlock { return clauses[0].block }
     
     // to conform to NestableStatement
     var block : TweeCodeBlock {
-        return elseBlock ?? clauses.last!.block
+        return elseClause?.block ?? clauses.last!.block
     }
 
     init(location: TweeLocation, condition: TweeExpression) {
-        clauses.append(IfClause(condition: condition))  // Always initialize with at least one clause
+        clauses.append(IfClause(location: location, condition: condition))  // Always initialize with at least one clause
         super.init(location: location)
     }
     
-    func addElseIf(condition: TweeExpression) -> TweeCodeBlock {
-        clauses.append(IfClause(condition: condition))
+    func addElseIf(location: TweeLocation, condition: TweeExpression) -> TweeCodeBlock {
+        clauses.append(IfClause(location: location, condition: condition))
         return clauses.last!.block
+    }
+    
+    func addElse(location: TweeLocation) -> TweeCodeBlock {
+        elseClause = ElseClause(location: location)
+        return elseClause!.block
     }
 
     override func asJson() -> Dict {
@@ -255,11 +271,11 @@ class TweeIfStatement : TweeStatement, NestableStatement {
         for clause in clauses {
             clauseData.append(["cond": clause.condition.string, "statements": clause.block.asJson()])
         }
-        var elseClause : Any = NSNull()
-        if elseBlock != nil {
-            elseClause = elseBlock!.asJson()
+        var elseData : Any = NSNull()
+        if elseClause != nil {
+            elseData = elseClause!.block.asJson()
         }
-        return ["type": "if", "clauses": clauseData, "else": elseClause]
+        return ["type": "if", "clauses": clauseData, "else": elseData]
     }
 }
 
