@@ -66,6 +66,7 @@ class TweeCodeBlock {
     }
 }
 
+// Used for statements that can contain its own code block, like If, Delay, and Passage
 protocol NestableStatement {
     var location : TweeLocation { get }
     var block : TweeCodeBlock { get }
