@@ -110,6 +110,38 @@ class TweeParserTests: XCTestCase {
         checkCodeForPassage(story, "Passage2", "TN")
     }
 
+    func testSpecialPassages() {
+        let story = parse("""
+            ::StoryTitle
+            The Time Machine
+
+            ::StoryAuthor
+            H.G. Wells
+
+            ::Twee2Settings
+            @story_start_name = 'TheEnd'
+
+            ::Start
+            Not the start
+
+            ::TheEnd
+            In the beginning...
+        """)
+        
+        XCTAssertEqual(story.title, "The Time Machine")
+        XCTAssertEqual(story.author, "H.G. Wells")
+        XCTAssertEqual(story.startPassageName, "TheEnd")
+        XCTAssertEqual(story.startPassage?.getSingleTextStatement()?.text, "In the beginning...")
+        XCTAssertEqual(story.passageCount, 2)  // after removing special passages, only two passages remain  (Start, TheEnd)
+    }
+    
+    func testInvalidTwee2Settings() {
+        checkParserFails("""
+            ::Twee2Settings
+            @story_start_name = Fail!
+        """, expectedError: .InvalidTwee2Settings, lineNumber: 2)
+    }
+
     func testTextOutsidePassage() {
         checkParserFails("""
             Some text
@@ -264,6 +296,30 @@ class TweeParserTests: XCTestCase {
         """, expectedError: .MissingEndSilently)
     }
     
+    func testInclude() {
+        let story = parse("""
+            ::Start
+            Text before
+            <<set $a = 2>>
+            <<include "Included">>
+            Text between
+            <<set $a = 7>>
+            <<include "Included">>
+            Text after
+
+            ::Included
+            Text inside the passage
+            <<if $x > 5>>
+                X is big.
+            <<else>>
+                X is small.
+            <<endif>>
+        """)
+
+        checkCodeForPassage(story, "Start", "TNSUTNSUTN")
+        checkCodeForPassage(story, "Included", "TNI(TN:TN)")
+    }
+    
     func testDelay() {
         let story = parse("""
             ::Start
@@ -332,39 +388,6 @@ class TweeParserTests: XCTestCase {
         """, expectedError: .InvalidChoiceSyntax, lineNumber: 3)
     }
     
-    func testSpecialPassages() {
-        let story = parse("""
-            ::StoryTitle
-            The Time Machine
-
-            ::StoryAuthor
-            H.G. Wells
-
-            ::Twee2Settings
-            @story_start_name = 'TheEnd'
-
-            ::Start
-            Not the start
-
-            ::TheEnd
-            In the beginning...
-        """)
-        
-        XCTAssertEqual(story.title, "The Time Machine")
-        XCTAssertEqual(story.author, "H.G. Wells")
-        XCTAssertEqual(story.startPassageName, "TheEnd")
-        XCTAssertEqual(story.startPassage?.getSingleTextStatement()?.text, "In the beginning...")
-        XCTAssertEqual(story.passageCount, 2)  // after removing special passages, only two passages remain  (Start, TheEnd)
-    }
-
-    func testInvalidTwee2Settings() {
-        checkParserFails("""
-            ::Twee2Settings
-            @story_start_name = Fail!
-        """, expectedError: .InvalidTwee2Settings, lineNumber: 2)
-    }
-    
-
     // MARK: Helper methods
 
     func parse(_ string : String) -> TweeStory {
@@ -415,6 +438,8 @@ class TweeParserTests: XCTestCase {
                 result += "L"
             case is TweeChoiceStatement:
                 result += "C"
+            case is TweeIncludeStatement:
+                result += "U"
             case let delayStmt as TweeDelayStatement:
                 result += "D("
                 result += codeBlockToPattern(delayStmt.block)

@@ -174,6 +174,19 @@ class TweeExpressionStatement : TweeStatement {
     }
 }
 
+class TweeIncludeStatement : TweeStatement {
+    let passageExpr : TweeExpression
+    
+    init(location: TweeLocation, passageExpr: TweeExpression) {
+        self.passageExpr = passageExpr
+        super.init(location: location)
+    }
+    
+    override func asJson() -> Dict {
+        return ["_type": "include", "passageExpr": passageExpr.string]
+    }
+}
+
 class TweeDelayStatement : TweeStatement, NestableStatement {
     let expression  : TweeExpression
     let block = TweeCodeBlock()

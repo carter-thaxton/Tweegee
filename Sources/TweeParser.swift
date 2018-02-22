@@ -186,6 +186,9 @@ class TweeParser {
                 case "choice":
                     try parseChoice(expr: expr, location: location)
 
+                case "include", "display":
+                    try parseInclude(expr: expr, location: location)
+                    
                 case "silently":
                     silently = true
 
@@ -193,10 +196,6 @@ class TweeParser {
                     silently = false
 
                 case "textinput":
-                    // TODO: support this
-                    break
-
-                case "include", "display":
                     // TODO: support this
                     break
 
@@ -328,5 +327,14 @@ class TweeParser {
         } catch let error as TweeErrorLocation {
             throw TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(error.message)")
         }
+    }
+    
+    private func parseInclude(expr: String?, location: TweeLocation) throws {
+        guard let expr = expr else {
+            throw TweeErrorLocation(error: .MissingExpression, location: location, message: "No expression given for include")
+        }
+        let passageExpr = try parse(expression: expr, location: location, for: "include")
+        let stmt = TweeIncludeStatement(location: location, passageExpr: passageExpr)
+        currentCodeBlock!.add(stmt)
     }
 }
