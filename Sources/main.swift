@@ -36,8 +36,10 @@ func runParse(filename: String) {
         if let line = error.location.line {
             print(line)
         }
+        exit(1)
     } catch {
         print("Unexpected error while parsing \(filename): \(error)")
+        exit(2)
     }
 }
 
