@@ -16,8 +16,10 @@ class TweeParser {
     let story = TweeStory()
     var currentPassage : TweePassage?
     var numTokensParsed = 0
+    var errors = [TweeErrorLocation]()
     var lineHasText = false
     var silently = false
+    var handlingError = false
 
     var currentStatements = [NestableStatement]()
     var currentStatement : NestableStatement? { return currentStatements.last }
@@ -31,10 +33,10 @@ class TweeParser {
     }
 
     func parse(string: String) throws -> TweeStory {
-        try lexer.lex(string: string, block: handleToken)
+        lexer.lex(string: string, block: handleToken)
         return try finish()
     }
-    
+
     func parse(expression: String?, location: TweeLocation, for macro: String) throws -> TweeExpression {
         guard let expression = expression else {
             throw TweeErrorLocation(error: .MissingExpression, location: location, message: "Missing expression for \(macro)")
@@ -48,6 +50,11 @@ class TweeParser {
     private func finish() throws -> TweeStory {
         try closePassageAndEnsureNoOpenStatements()
         try parseSpecialPassages()
+        
+        // For now, test by throwing first error after parsing
+        if let error = errors.first {
+            throw error
+        }
         return story
     }
 
@@ -92,8 +99,7 @@ class TweeParser {
                     fatalError("TweePassage found in nested position")
                 }
                 // ok to have open passage, but close it now
-                currentPassage = nil
-                currentStatements.removeAll()
+                resetPassage()
             }
             else if stmt is TweeIfStatement {
                 throw TweeErrorLocation(error: .MissingEndIf, location: stmt.location, message: "Passage ended without closing endif")
@@ -102,111 +108,136 @@ class TweeParser {
             }
         }
     }
+    
+    private func resetPassage() {
+        currentStatements.removeAll()
+        currentPassage = nil
+        lineHasText = false
+        silently = false
+    }
+    
+    private func handleToken(token: TweeToken, location: TweeLocation) {
+        // return early while handling errors, up until the next passage symbol
+        if handlingError {
+            if case .Passage = token {
+                handlingError = false
+            } else {
+                return
+            }
+        }
 
-    private func handleToken(token: TweeToken, location: TweeLocation) throws {
         numTokensParsed += 1
-        
+
         func ensureCodeBlock() throws {
             if currentPassage == nil || currentCodeBlock == nil {
                 throw TweeErrorLocation(error: .TextOutsidePassage, location: location, message: "No text is allowed outside of a passage")
             }
         }
         
-        switch token {
+        do {
+            switch token {
+            case .Error(let error, let message):
+                throw TweeErrorLocation(error: error, location: location, message: message)
 
-        case .Passage(let name, let tags, let position):
-            try closePassageAndEnsureNoOpenStatements()
+            case .Passage(let name, let tags, let position):
+                try closePassageAndEnsureNoOpenStatements()
 
-            currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
-            currentStatements.append(currentPassage!)
-            try story.addPassage(passage: currentPassage!)
-            lineHasText = false  // by definition, starts a new line
-            silently = false
+                currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
+                currentStatements.append(currentPassage!)
+                try story.addPassage(passage: currentPassage!)
 
-        case .Comment(let comment):
-            // ignore comments
-            _ = comment
-            break
+            case .Comment(let comment):
+                // ignore comments
+                _ = comment
+                break
 
-        case .Newline:
-            endLineOfText(location: location)
+            case .Newline:
+                endLineOfText(location: location)
 
-        case .Text(let text):
-            try ensureCodeBlock()
-            
-            // Special case for | separating links
-            if text.trimmingWhitespace() == "|" {
-                if let link = currentCodeBlock?.last as? TweeLinkStatement {
-                    // convert previous link to list of choices
-                    currentCodeBlock!.pop()
-                    let stmt = TweeChoiceStatement(location: link.location)
-                    stmt.choices.append(link)
+            case .Text(let text):
+                try ensureCodeBlock()
+                
+                // Special case for | separating links
+                if text.trimmingWhitespace() == "|" {
+                    if let link = currentCodeBlock?.last as? TweeLinkStatement {
+                        // convert previous link to list of choices
+                        currentCodeBlock!.pop()
+                        let stmt = TweeChoiceStatement(location: link.location)
+                        stmt.choices.append(link)
+                        currentCodeBlock!.add(stmt)
+                    } else if let choices = currentCodeBlock?.last as? TweeChoiceStatement {
+                        // already a list of choices, simply ignore the |
+                        _ = choices
+                    }
+                } else if !silently {
+                    let stmt = TweeTextStatement(location: location, text: text)
                     currentCodeBlock!.add(stmt)
-                } else if let choices = currentCodeBlock?.last as? TweeChoiceStatement {
-                    // already a list of choices, simply ignore the |
-                    _ = choices
+                    lineHasText = true  // add some text to line
                 }
-            } else if !silently {
-                let stmt = TweeTextStatement(location: location, text: text)
-                currentCodeBlock!.add(stmt)
-                lineHasText = true  // add some text to line
-            }
 
-        case .Link(let name, let title):
-            try ensureCodeBlock()
-            let stmt = TweeLinkStatement(location: location, name: name, title: title)
+            case .Link(let name, let title):
+                try ensureCodeBlock()
+                let stmt = TweeLinkStatement(location: location, name: name, title: title)
 
-            // check if link is part of a list of choices
-            if let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement {
-                choiceStmt.choices.append(stmt)
-            } else {
-                endLineOfText(location: location)  // end any text before following a link
-                currentCodeBlock!.add(stmt)
-            }
+                // check if link is part of a list of choices
+                if let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement {
+                    choiceStmt.choices.append(stmt)
+                } else {
+                    endLineOfText(location: location)  // end any text before following a link
+                    currentCodeBlock!.add(stmt)
+                }
 
-        case .Macro(let name, let expr):
-            try ensureCodeBlock()
-            if name == nil {
-                // raw expression used in macro
-                let expression = try parse(expression: expr, location: location, for: "exprStmt")
-                let exprStmt = TweeExpressionStatement(location: location, expression: expression)
-                currentCodeBlock!.add(exprStmt)
-            } else {
-                switch name! {
-                case "if", "else", "elseif", "endif", "/if":
-                    try parseIf(name: name!, expr: expr, location: location)
+            case .Macro(let name, let expr):
+                try ensureCodeBlock()
+                if name == nil {
+                    // raw expression used in macro
+                    let expression = try parse(expression: expr, location: location, for: "exprStmt")
+                    let exprStmt = TweeExpressionStatement(location: location, expression: expression)
+                    currentCodeBlock!.add(exprStmt)
+                } else {
+                    switch name! {
+                    case "if", "else", "elseif", "endif", "/if":
+                        try parseIf(name: name!, expr: expr, location: location)
 
-                case "delay", "enddelay", "/delay":
-                    try parseDelay(name: name!, expr: expr, location: location)
+                    case "delay", "enddelay", "/delay":
+                        try parseDelay(name: name!, expr: expr, location: location)
 
-                case "set":
-                    try parseSet(expr: expr, location: location)
-                    break
+                    case "set":
+                        try parseSet(expr: expr, location: location)
+                        break
 
-                case "choice":
-                    try parseChoice(expr: expr, location: location)
+                    case "choice":
+                        try parseChoice(expr: expr, location: location)
 
-                case "include", "display":
-                    try parseInclude(expr: expr, location: location)
-                    
-                case "silently":
-                    silently = true
+                    case "include", "display":
+                        try parseInclude(expr: expr, location: location)
+                        
+                    case "silently":
+                        silently = true
 
-                case "endsilently", "/silently":
-                    silently = false
+                    case "endsilently", "/silently":
+                        silently = false
 
-                case "textinput":
-                    // TODO: support this
-                    break
+                    case "textinput":
+                        // TODO: support this
+                        break
 
-                case "d", "endd", "/d":
-                    // ignore these for now
-                    break
-                    
-                default:
-                    throw TweeErrorLocation(error: .UnrecognizedMacro, location: location, message: "Unrecognized macro: \(name!)")
+                    case "d", "endd", "/d":
+                        // ignore these for now
+                        break
+                        
+                    default:
+                        throw TweeErrorLocation(error: .UnrecognizedMacro, location: location, message: "Unrecognized macro: \(name!)")
+                    }
                 }
             }
+        } catch let error as TweeErrorLocation {
+            // Error occurred while parsing line.  Just reset the passage, and move on.
+            errors.append(error)
+            resetPassage()
+            handlingError = true
+        } catch {
+            // Ignore any other errors
         }
     }
     
@@ -320,12 +351,24 @@ class TweeParser {
             throw TweeErrorLocation(error: .MissingExpression, location: location, message: "No expression given for choice")
         }
 
-        // This is a weird one.  Just lex the contents of a choice macro, as though the choice didn't even exist.
-        // Technically this will allow just about anything inside the macro, but it works well enough.  We don't plan on using this going forward.
-        do {
-            try lexer.lex(string: expr, includeNewlines: false, block: handleToken)
-        } catch let error as TweeErrorLocation {
-            throw TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(error.message)")
+        // This is a weird one.  Lex the contents of a choice macro.
+        // Pass through handling any links, and produce an error otherwise.
+        var choiceError : TweeErrorLocation?
+        lexer.lex(string: expr, includeNewlines: false) { (token, _) in
+            if choiceError == nil {
+                switch token {
+                case .Error(_, let message):
+                        choiceError = TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(message)")
+                case .Link:
+                    self.handleToken(token: token, location: location)
+                default:
+                    choiceError = TweeErrorLocation(error: .InvalidChoiceSyntax, location: location, message: "Only links allowed inside of choice")
+                }
+            }
+        }
+
+        if choiceError != nil {
+            throw choiceError!
         }
     }
     

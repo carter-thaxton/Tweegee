@@ -15,6 +15,7 @@ enum TweeToken {
     case Link(name: String, title: String?)
     case Macro(name: String?, expr: String?)
     case Comment(String)
+    case Error(error: TweeError, message: String)
 }
 
 extension TweeToken : Equatable {
@@ -66,22 +67,22 @@ private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 class TweeLexer {
     let macroNameCharacters = CharacterSet.letters.union(CharacterSet(charactersIn: "/="))
 
-    func lex(filename: String, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
+    func lex(filename: String, block: @escaping (TweeToken, TweeLocation) -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
-        try lex(string: str, filename: filename, block: block)
+        lex(string: str, filename: filename, block: block)
     }
 
-    func lex(string: String, filename: String? = nil, includeNewlines: Bool = true, block: @escaping (TweeToken, TweeLocation) throws -> Void) throws {
+    func lex(string: String, filename: String? = nil, includeNewlines: Bool = true, block: @escaping (TweeToken, TweeLocation) -> Void) {
         var location = TweeLocation(filename: filename, line: nil, lineNumber: 1)
         let lines = string.components(separatedBy: .newlines)  // TODO: consider enumerateLines, which doesn't work on Linux
         for line in lines {
             location.line = line
-            try self.lex(line: line, location: location, includeNewline: includeNewlines, block: block)
+            lex(line: line, location: location, includeNewline: includeNewlines, block: block)
             location.lineNumber += 1
         }
     }
 
-    func lex(line: String, location: TweeLocation, includeNewline: Bool, block handleToken: (TweeToken, TweeLocation) throws -> Void) throws {
+    func lex(line: String, location: TweeLocation, includeNewline: Bool, block handleToken: (TweeToken, TweeLocation) -> Void) {
         if let matches = line.match(regex: passageHeaderRegex) {
             let name = matches[1]!.trimmingWhitespace()
             let tags = matches[2]
@@ -95,7 +96,7 @@ class TweeLexer {
                 pos = CGPoint(x: Int(posx!)!, y: Int(posy!)!)
             }
             
-            try handleToken(.Passage(name: name, tags: tagsArr, position: pos), location)
+            handleToken(.Passage(name: name, tags: tagsArr, position: pos), location)
         } else {
             let text = line.trimmingWhitespace()
             if !text.isEmpty {
@@ -110,7 +111,7 @@ class TweeLexer {
                     if !s.isAtEnd {
                         if s.match("[[") {  // link, e.g [[Choice|choice_1]]
                             if !accText.isEmpty {
-                                try handleToken(.Text(accText), location)
+                                handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             let link = try? s.scan(upTo: "]]")
@@ -118,51 +119,51 @@ class TweeLexer {
                                 // split on pipe, and trim each component
                                 let nameAndTitle = link!!.components(separatedBy: "|").map { $0.trimmingWhitespace() }
                                 if nameAndTitle.count == 2 {
-                                    try handleToken(.Link(name: nameAndTitle[1], title: nameAndTitle[0]), location)
+                                    handleToken(.Link(name: nameAndTitle[1], title: nameAndTitle[0]), location)
                                 } else if nameAndTitle.count == 1 {
-                                    try handleToken(.Link(name: nameAndTitle[0], title: nil), location)
+                                    handleToken(.Link(name: nameAndTitle[0], title: nil), location)
                                 } else {
-                                    throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location, message: "Invalid link syntax.  Too many | symbols")
+                                    return handleToken(.Error(error: .InvalidLinkSyntax, message: "Invalid link syntax.  Too many | symbols"), location)
                                 }
                                 s.match("]]")
                             } else {
-                                throw TweeErrorLocation(error: .InvalidLinkSyntax, location: location, message: "Invalid link syntax.  Missing ]]")
+                                return handleToken(.Error(error: .InvalidLinkSyntax, message: "Invalid link syntax.  Missing ]]"), location)
                             }
                         } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
                             if !accText.isEmpty {
-                                try handleToken(.Text(accText), location)
+                                handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             let macro = try? s.scan(upTo: ">>")
                             if macro != nil && macro! != nil {
                                 let text = macro!!.trimmingWhitespace()
                                 if text.isEmpty {
-                                    throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location, message: "Found empty macro")
+                                    return handleToken(.Error(error: .InvalidMacroSyntax, message: "Found empty macro"), location)
                                 } else if macroNameCharacters.contains(text.unicodeScalars.first!) {
                                     // starts with a macro, split on whitespace, giving name and rest of expression
                                     let nameAndExpr = text.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
                                     if nameAndExpr.count >= 2 {
-                                        try handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
+                                        handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
                                     } else {
-                                        try handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
+                                        handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
                                     }
                                 } else {
                                     // doesn't start with a macro name, so it's a raw expression
-                                    try handleToken(.Macro(name: nil, expr: text), location)
+                                    handleToken(.Macro(name: nil, expr: text), location)
                                 }
                                 s.match(">>")
                             } else {
-                                throw TweeErrorLocation(error: .InvalidMacroSyntax, location: location, message: "Invalid macro syntax.  Missing >>")
+                                return handleToken(.Error(error: .InvalidMacroSyntax, message: "Invalid macro syntax.  Missing >>"), location)
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
                             accText = accText.trimmingTrailingWhitespace()
                             if !accText.isEmpty {
-                                try handleToken(.Text(accText), location)
+                                handleToken(.Text(accText), location)
                                 accText = ""
                             }
                             s.match("//")
                             let comment = s.remainder.trimmingWhitespace()
-                            try handleToken(.Comment(comment), location)
+                            handleToken(.Comment(comment), location)
                             s.peekAtEnd()
                         } else {
                             try! s.back()
@@ -173,11 +174,11 @@ class TweeLexer {
                 
                 accText = accText.trimmingTrailingWhitespace()
                 if !accText.isEmpty {
-                    try handleToken(.Text(accText), location)
+                    handleToken(.Text(accText), location)
                 }
             }
             if includeNewline {
-                try handleToken(.Newline, location)
+                handleToken(.Newline, location)
             }
         }
     }

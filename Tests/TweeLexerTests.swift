@@ -139,25 +139,28 @@ class TweeLexerTests: XCTestCase {
     func checkLexer(_ string: String, tokens: [TweeToken]) {
         var result = [TweeToken]()
         let lexer = TweeLexer()
-        try! lexer.lex(string: string) { tok, _ in result.append(tok) }
+        lexer.lex(string: string) { tok, _ in result.append(tok) }
         XCTAssertEqual(result, tokens)
     }
 
     func checkLexerFails(_ string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
         let lexer = TweeLexer()
-        do {
-            try lexer.lex(string: string) { _, _ in }
-        } catch let error as TweeErrorLocation {
+        var errors = [TweeErrorLocation]()
+
+        lexer.lex(string: string) { token, location in
+            if case .Error(let error, let message) = token {
+                errors.append(TweeErrorLocation(error: error, location: location, message: message))
+            }
+        }
+
+        XCTAssert(!errors.isEmpty, "Expected lexer to produce an error")
+        if let error = errors.first {
             if expectedError != nil {
                 XCTAssertEqual(error.error, expectedError!)
             }
             if lineNumber != nil {
                 XCTAssertEqual(error.location.lineNumber, lineNumber)
             }
-            return
-        } catch {
-            XCTFail("Unexpected error thrown from lexer")
         }
-        XCTFail("Expected lexer to throw an error")
     }
 }

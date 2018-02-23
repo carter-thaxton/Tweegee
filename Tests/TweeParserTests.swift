@@ -20,7 +20,10 @@ extension TweeStory {
 }
 
 class TweeParserTests: XCTestCase {
-    
+    override func setUp() {
+        continueAfterFailure = false
+    }
+
     func testBasicParse() {
         let story = parse("""
             ::Passage1
@@ -360,11 +363,11 @@ class TweeParserTests: XCTestCase {
             let stmts = passage.block.statements
             XCTAssertEqual(stmts.count, 1)
             
-            guard let choice = stmts[0] as? TweeChoiceStatement else {
+            guard let choice = stmts.first as? TweeChoiceStatement else {
                 return XCTFail("No choice statement")
             }
             XCTAssertEqual(choice.choices.count, 2)
-            
+
             let link1 = choice.choices[0]
             XCTAssertEqual(link1.name, "choice1")
             XCTAssertNil(link1.title)
