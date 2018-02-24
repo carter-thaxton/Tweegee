@@ -57,7 +57,7 @@ func run() {
         let jsonString = try toJsonString(jsonData)
         print(jsonString)
 
-    } catch let error as TweeErrorLocation {
+    } catch let error as TweeError {
         print("Error on line: \(error.location.lineNumber) - \(error.message)")
         if let line = error.location.line {
             print(line)

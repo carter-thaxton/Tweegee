@@ -26,7 +26,7 @@ class TweeStory : AsJson {
 
     func addPassage(passage: TweePassage) throws {
         if let existing = passagesByName[passage.name] {
-            throw TweeErrorLocation(error: .DuplicatePassageName, location: passage.location,
+            throw TweeError(type: .DuplicatePassageName, location: passage.location,
                                     message: "Passage \(passage.name) is already defined on line \(existing.location.lineNumber)")
         }
         passagesByName[passage.name] = passage

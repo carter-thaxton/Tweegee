@@ -15,7 +15,7 @@ enum TweeToken {
     case Link(name: String, title: String?)
     case Macro(name: String?, expr: String?)
     case Comment(String)
-    case Error(error: TweeError, message: String)
+    case Error(type: TweeErrorType, message: String)
 }
 
 extension TweeToken : Equatable {
@@ -123,11 +123,11 @@ class TweeLexer {
                                 } else if nameAndTitle.count == 1 {
                                     handleToken(.Link(name: nameAndTitle[0], title: nil), location)
                                 } else {
-                                    return handleToken(.Error(error: .InvalidLinkSyntax, message: "Invalid link syntax.  Too many | symbols"), location)
+                                    return handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Too many | symbols"), location)
                                 }
                                 s.match("]]")
                             } else {
-                                return handleToken(.Error(error: .InvalidLinkSyntax, message: "Invalid link syntax.  Missing ]]"), location)
+                                return handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Missing ]]"), location)
                             }
                         } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
                             if !accText.isEmpty {
@@ -138,7 +138,7 @@ class TweeLexer {
                             if macro != nil && macro! != nil {
                                 let text = macro!!.trimmingWhitespace()
                                 if text.isEmpty {
-                                    return handleToken(.Error(error: .InvalidMacroSyntax, message: "Found empty macro"), location)
+                                    return handleToken(.Error(type: .InvalidMacroSyntax, message: "Found empty macro"), location)
                                 } else if macroNameCharacters.contains(text.unicodeScalars.first!) {
                                     // starts with a macro, split on whitespace, giving name and rest of expression
                                     let nameAndExpr = text.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
@@ -153,7 +153,7 @@ class TweeLexer {
                                 }
                                 s.match(">>")
                             } else {
-                                return handleToken(.Error(error: .InvalidMacroSyntax, message: "Invalid macro syntax.  Missing >>"), location)
+                                return handleToken(.Error(type: .InvalidMacroSyntax, message: "Invalid macro syntax.  Missing >>"), location)
                             }
                         } else if s.match("//") {  // comment, e.g. // here's a comment
                             accText = accText.trimmingTrailingWhitespace()

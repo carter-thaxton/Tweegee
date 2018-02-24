@@ -1,5 +1,5 @@
 //
-//  TweeErrorLocation.swift
+//  TweeError.swift
 //  Tweegee
 //
 //  Created by Carter Thaxton on 2/7/18.
@@ -8,13 +8,13 @@
 
 import Foundation
 
-struct TweeErrorLocation : Error {
-    let error : TweeError
+struct TweeError : Error {
+    let type : TweeErrorType
     let location : TweeLocation
     let message : String
 }
 
-enum TweeError : Equatable {
+enum TweeErrorType : Equatable {
     case InvalidLinkSyntax
     case InvalidMacroSyntax
     case InvalidChoiceSyntax

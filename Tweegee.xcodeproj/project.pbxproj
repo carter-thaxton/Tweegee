@@ -23,8 +23,8 @@
 		AD3F5142202BC6D300F1BE3C /* TweeParserTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5141202BC6D300F1BE3C /* TweeParserTests.swift */; };
 		AD3F5144202BCC8C00F1BE3C /* TweeStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5143202BCC8C00F1BE3C /* TweeStory.swift */; };
 		AD3F5145202BCC8C00F1BE3C /* TweeStory.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5143202BCC8C00F1BE3C /* TweeStory.swift */; };
-		AD3F5147202BD3ED00F1BE3C /* TweeErrorLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */; };
-		AD3F5148202BD3ED00F1BE3C /* TweeErrorLocation.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */; };
+		AD3F5147202BD3ED00F1BE3C /* TweeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5146202BD3ED00F1BE3C /* TweeError.swift */; };
+		AD3F5148202BD3ED00F1BE3C /* TweeError.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5146202BD3ED00F1BE3C /* TweeError.swift */; };
 		AD562D33203E2A1C00BC2BBA /* TweeStatements.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD562D32203E2A1C00BC2BBA /* TweeStatements.swift */; };
 		AD562D34203E2A1C00BC2BBA /* TweeStatements.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD562D32203E2A1C00BC2BBA /* TweeStatements.swift */; };
 		AD83BCD9203BA33400D06899 /* TweeExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCD8203BA33400D06899 /* TweeExpression.swift */; };
@@ -60,7 +60,7 @@
 		AD3F513E202BC6B500F1BE3C /* TweeParser.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeParser.swift; sourceTree = "<group>"; };
 		AD3F5141202BC6D300F1BE3C /* TweeParserTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeParserTests.swift; sourceTree = "<group>"; };
 		AD3F5143202BCC8C00F1BE3C /* TweeStory.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeStory.swift; sourceTree = "<group>"; };
-		AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeErrorLocation.swift; sourceTree = "<group>"; };
+		AD3F5146202BD3ED00F1BE3C /* TweeError.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeError.swift; sourceTree = "<group>"; };
 		AD562D32203E2A1C00BC2BBA /* TweeStatements.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeStatements.swift; sourceTree = "<group>"; };
 		AD83BCD8203BA33400D06899 /* TweeExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeExpression.swift; sourceTree = "<group>"; };
 		AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONHelpers.swift; sourceTree = "<group>"; };
@@ -112,7 +112,7 @@
 				AD3F5143202BCC8C00F1BE3C /* TweeStory.swift */,
 				AD562D32203E2A1C00BC2BBA /* TweeStatements.swift */,
 				AD83BCD8203BA33400D06899 /* TweeExpression.swift */,
-				AD3F5146202BD3ED00F1BE3C /* TweeErrorLocation.swift */,
+				AD3F5146202BD3ED00F1BE3C /* TweeError.swift */,
 				AD3F5134200EA8C900F1BE3C /* StringHelpers.swift */,
 				AD3F5137201042AC00F1BE3C /* StringScanner.swift */,
 				AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */,
@@ -237,7 +237,7 @@
 				AD3F513F202BC6B500F1BE3C /* TweeParser.swift in Sources */,
 				AD3F5144202BCC8C00F1BE3C /* TweeStory.swift in Sources */,
 				AD562D33203E2A1C00BC2BBA /* TweeStatements.swift in Sources */,
-				AD3F5147202BD3ED00F1BE3C /* TweeErrorLocation.swift in Sources */,
+				AD3F5147202BD3ED00F1BE3C /* TweeError.swift in Sources */,
 				AD83BCD9203BA33400D06899 /* TweeExpression.swift in Sources */,
 				AD3F5135200EA8C900F1BE3C /* StringHelpers.swift in Sources */,
 				AD3F5132200E9CDF00F1BE3C /* TweeLexer.swift in Sources */,
@@ -255,7 +255,7 @@
 				AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */,
 				AD562D34203E2A1C00BC2BBA /* TweeStatements.swift in Sources */,
 				AD3F513D202BC51D00F1BE3C /* TweeLexerTests.swift in Sources */,
-				AD3F5148202BD3ED00F1BE3C /* TweeErrorLocation.swift in Sources */,
+				AD3F5148202BD3ED00F1BE3C /* TweeError.swift in Sources */,
 				AD3F5136200EA8C900F1BE3C /* StringHelpers.swift in Sources */,
 				AD3F5140202BC6B500F1BE3C /* TweeParser.swift in Sources */,
 				AD3F5133200E9CDF00F1BE3C /* TweeLexer.swift in Sources */,

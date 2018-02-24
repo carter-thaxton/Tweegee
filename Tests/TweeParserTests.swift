@@ -398,13 +398,13 @@ class TweeParserTests: XCTestCase {
         return try! parser.parse(string: string)
     }
 
-    func checkParserFails(_ string: String, expectedError: TweeError? = nil, lineNumber: Int? = nil) {
+    func checkParserFails(_ string: String, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) {
         let parser = TweeParser()
         do {
             let _ = try parser.parse(string: string)
-        } catch let error as TweeErrorLocation {
+        } catch let error as TweeError {
             if expectedError != nil {
-                XCTAssertEqual(error.error, expectedError!)
+                XCTAssertEqual(error.type, expectedError!)
             }
             if lineNumber != nil {
                 XCTAssertEqual(error.location.lineNumber, lineNumber)
