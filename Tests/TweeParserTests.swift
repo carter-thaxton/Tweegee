@@ -113,6 +113,21 @@ class TweeParserTests: XCTestCase {
         checkCodeForPassage(story, "Passage2", "TN")
     }
 
+    func testDuplicatePassages() {
+        let story = parse("""
+            ::Passage1
+            Some text
+
+            ::Passage2
+            Some other text
+
+            ::Passage1
+            Uh oh!
+        """, allowErrors: true)
+        
+        checkError(story: story, expectedError: .DuplicatePassageName, lineNumber: 7)
+    }
+    
     func testSpecialPassages() {
         let story = parse("""
             ::StoryTitle
@@ -124,18 +139,23 @@ class TweeParserTests: XCTestCase {
             ::Twee2Settings
             @story_start_name = 'TheEnd'
 
+            ::StoryAuthor
+            Jules Verne
+
             ::Start
             Not the start
 
             ::TheEnd
             In the beginning...
-        """)
+        """, allowErrors: true)
         
         XCTAssertEqual(story.title, "The Time Machine")
-        XCTAssertEqual(story.author, "H.G. Wells")
+        XCTAssertEqual(story.author, "H.G. Wells")  // Not Jules Verne
         XCTAssertEqual(story.startPassageName, "TheEnd")
         XCTAssertEqual(story.startPassage?.getSingleTextStatement()?.text, "In the beginning...")
-        XCTAssertEqual(story.passageCount, 2)  // after removing special passages, only two passages remain  (Start, TheEnd)
+        XCTAssertEqual(story.passageCount, 2)  // after removing special passages, including the bogus StoryAuthor, only two passages remain  (Start, TheEnd)
+
+        checkError(story: story, expectedError: .DuplicatePassageName, lineNumber: 10)
     }
     
     func testInvalidTwee2Settings() {
@@ -393,16 +413,17 @@ class TweeParserTests: XCTestCase {
     
     // MARK: Helper methods
 
-    func parse(_ string : String) -> TweeStory {
+    func parse(_ string : String, allowErrors: Bool = false) -> TweeStory {
         let parser = TweeParser()
-        return try! parser.parse(string: string)
+        let story = parser.parse(string: string)
+        if !allowErrors {
+            XCTAssert(story.errors.isEmpty, "Errors produced while parsing: \(story.errors)")
+        }
+        return story
     }
 
-    func checkParserFails(_ string: String, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) {
-        let parser = TweeParser()
-        do {
-            let _ = try parser.parse(string: string)
-        } catch let error as TweeError {
+    func checkError(story: TweeStory, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) {
+        if let error = story.errors.first {
             if expectedError != nil {
                 XCTAssertEqual(error.type, expectedError!)
             }
@@ -410,10 +431,14 @@ class TweeParserTests: XCTestCase {
                 XCTAssertEqual(error.location.lineNumber, lineNumber)
             }
             return
-        } catch {
-            XCTFail("Unexpected error thrown from parser")
+        } else {
+            XCTFail("Expected parser to produce an error")
         }
-        XCTFail("Expected parser to throw an error")
+    }
+    
+    func checkParserFails(_ string: String, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) {
+        let story = parse(string, allowErrors: true)
+        checkError(story: story, expectedError: expectedError, lineNumber: lineNumber)
     }
     
     func checkCodeForPassage(_ story: TweeStory, _ passageName: String, _ pattern: String) {

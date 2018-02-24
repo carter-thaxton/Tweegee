@@ -17,6 +17,8 @@ class TweeStory : AsJson {
     var startPassageName : String = "Start"
     var title : String?
     var author : String?
+    
+    var errors = [TweeError]()
 
     var startPassage : TweePassage? {
         // For now, don't support Twee2Settings to specify the start passage.
@@ -48,11 +50,24 @@ class TweeStory : AsJson {
     }
 
     func asJson() -> Dict {
-        var passages = DictArr()
-        for passage in passagesInOrder {
-            passages.append(passage.asJson())
+        return asJson(includePassages: true)
+    }
+
+    // Linux swift can't handle AsJson prototype with optional arguments.  Grr...
+    func asJson(includePassages: Bool) -> Dict {
+        var passagesData = DictArr()
+        if includePassages {
+            for passage in passagesInOrder {
+                passagesData.append(passage.asJson())
+            }
         }
         
-        return ["title": title ?? NSNull(), "author": author ?? NSNull(), "start": startPassageName, "passageCount": passageCount, "passages": passages]
+        var errorsData = DictArr()
+        for error in errors {
+            errorsData.append(error.asJson())
+        }
+
+        return ["title": title ?? NSNull(), "author": author ?? NSNull(), "start": startPassageName, "passageCount": passageCount,
+                      "errors": errorsData, "passages": includePassages ? passagesData : NSNull()]
     }
 }

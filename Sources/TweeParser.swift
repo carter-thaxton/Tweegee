@@ -16,7 +16,6 @@ class TweeParser {
     let story = TweeStory()
     var currentPassage : TweePassage?
     var numTokensParsed = 0
-    var errors = [TweeError]()
     var lineHasText = false
     var silently = false
     var handlingError = false
@@ -29,12 +28,12 @@ class TweeParser {
 
     func parse(filename: String) throws -> TweeStory {
         try lexer.lex(filename: filename, block: handleToken)
-        return try finish()
+        return finish()
     }
 
-    func parse(string: String) throws -> TweeStory {
+    func parse(string: String) -> TweeStory {
         lexer.lex(string: string, block: handleToken)
-        return try finish()
+        return finish()
     }
 
     func parse(expression: String?, location: TweeLocation, for macro: String) throws -> TweeExpression {
@@ -47,18 +46,13 @@ class TweeParser {
 
     // MARK: Parser Implementation
 
-    private func finish() throws -> TweeStory {
-        try closePassageAndEnsureNoOpenStatements()
-        try parseSpecialPassages()
-        
-        // For now, test by throwing first error after parsing
-        if let error = errors.first {
-            throw error
-        }
+    private func finish() -> TweeStory {
+        ensureNoOpenStatements()
+        parseSpecialPassages()
         return story
     }
 
-    private func parseSpecialPassages() throws {
+    private func parseSpecialPassages() {
         // ::StoryTitle
         // Title of Story
         if let titlePassage = story.removePassage(name: "StoryTitle") {
@@ -82,33 +76,31 @@ class TweeParser {
                 if let result = settings.text.match(pattern: "^@story_start_name\\s*=\\s*['\"]([^.\"]*)['\"];?$") {
                     story.startPassageName = result[1]!
                 } else {
-                    throw TweeError(type: .InvalidTwee2Settings, location: settings.location, message: "@story_start_name found in Twee2Settings passage, but has invalid syntax")
+                    story.errors.append(TweeError(type: .InvalidTwee2Settings, location: settings.location, message: "@story_start_name found in Twee2Settings passage, but has invalid syntax"))
                 }
             }
         }
     }
 
-    private func closePassageAndEnsureNoOpenStatements() throws {
+    private func ensureNoOpenStatements() {
         if let stmt = currentStatement {
             if silently {
-                // simply use passage location
-                throw TweeError(type: .MissingEndSilently, location: stmt.location, message: "Passage ended without closing endsilently")
+                // simply use passage location for endsilently error
+                story.errors.append(TweeError(type: .MissingEndSilently, location: stmt.location, message: "Passage ended without closing endsilently"))
             }
             if stmt is TweePassage {
                 if currentStatements.count != 1 {
                     fatalError("TweePassage found in nested position")
                 }
-                // ok to have open passage, but close it now
-                resetPassage()
             }
             else if stmt is TweeIfStatement {
-                throw TweeError(type: .MissingEndIf, location: stmt.location, message: "Passage ended without closing endif")
+                story.errors.append(TweeError(type: .MissingEndIf, location: stmt.location, message: "Passage ended without closing endif"))
             } else {
                 fatalError("Unexpected type of open statement: \(stmt)")
             }
         }
     }
-    
+
     private func resetPassage() {
         currentStatements.removeAll()
         currentPassage = nil
@@ -140,7 +132,8 @@ class TweeParser {
                 throw TweeError(type: type, location: location, message: message)
 
             case .Passage(let name, let tags, let position):
-                try closePassageAndEnsureNoOpenStatements()
+                ensureNoOpenStatements()
+                resetPassage()
 
                 currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
                 currentStatements.append(currentPassage!)
@@ -148,7 +141,7 @@ class TweeParser {
                 
                 // if an existing passage already exists by name, add an error, but continue parsing
                 if let existing = existing {
-                    errors.append(TweeError(type: .DuplicatePassageName, location: currentPassage!.location,
+                    story.errors.append(TweeError(type: .DuplicatePassageName, location: currentPassage!.location,
                         message: "Passage \(existing.name) is already defined on line \(existing.location.lineNumber)"))
                 }
 
@@ -239,7 +232,7 @@ class TweeParser {
             }
         } catch let error as TweeError {
             // Error occurred while parsing line.  Collect the errors, reset the passage, and move on until start of next passage.
-            errors.append(error)
+            story.errors.append(error)
             resetPassage()
             handlingError = true
         } catch {
