@@ -24,22 +24,24 @@ class TweeStory : AsJson {
         return passagesByName[startPassageName]
     }
 
-    func addPassage(passage: TweePassage) throws {
-        if let existing = passagesByName[passage.name] {
-            throw TweeError(type: .DuplicatePassageName, location: passage.location,
-                                    message: "Passage \(passage.name) is already defined on line \(existing.location.lineNumber)")
-        }
-        passagesByName[passage.name] = passage
+    func addPassage(passage: TweePassage) -> TweePassage? {
+        // If there are duplicate passages with the same name, passagesByName will refer to the first encountered,
+        // and the duplicate will be present in passagesInOrder.
         passagesInOrder.append(passage)
+
+        // If there is an existing passage with that name, return it
+        if let existing = passagesByName[passage.name] {
+            return existing
+        }
+
+        // Otherwise return nil, indicating success
+        passagesByName[passage.name] = passage
+        return nil
     }
-    
+
     func removePassage(name: String) -> TweePassage? {
         if let passage = passagesByName.removeValue(forKey: name) {
-            if let index = passagesInOrder.index(where: { $0 === passage }) {
-                passagesInOrder.remove(at: index)
-            } else {
-                fatalError("Passage found by name, but not in passagesInOrder: \(name)")
-            }
+            passagesInOrder = passagesInOrder.filter { $0.name != name }  // remove all that match the name
             return passage
         }
         return nil

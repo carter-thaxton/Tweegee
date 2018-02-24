@@ -144,7 +144,13 @@ class TweeParser {
 
                 currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
                 currentStatements.append(currentPassage!)
-                try story.addPassage(passage: currentPassage!)
+                let existing = story.addPassage(passage: currentPassage!)
+                
+                // if an existing passage already exists by name, add an error, but continue parsing
+                if let existing = existing {
+                    errors.append(TweeError(type: .DuplicatePassageName, location: currentPassage!.location,
+                        message: "Passage \(existing.name) is already defined on line \(existing.location.lineNumber)"))
+                }
 
             case .Comment(let comment):
                 // ignore comments
