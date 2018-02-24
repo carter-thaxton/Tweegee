@@ -351,16 +351,16 @@ class TweeParser {
             throw TweeError(type: .MissingExpression, location: location, message: "No expression given for choice")
         }
 
-        // This is a weird one.  Lex the contents of a choice macro.
+        // This is a weird one.  Lex the contents of a choice macro, as though the macro weren't there.
         // Pass through handling any links, and produce an error otherwise.
         var choiceError : TweeError?
         lexer.lex(string: expr, includeNewlines: false) { (token, _) in
             if choiceError == nil {
                 switch token {
-                case .Error(_, let message):
-                        choiceError = TweeError(type: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(message)")
                 case .Link:
                     self.handleToken(token: token, location: location)
+                case .Error(_, let message):
+                    choiceError = TweeError(type: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(message)")
                 default:
                     choiceError = TweeError(type: .InvalidChoiceSyntax, location: location, message: "Only links allowed inside of choice")
                 }
