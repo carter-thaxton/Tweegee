@@ -351,13 +351,16 @@ class TweeParser {
         }
 
         // This is a weird one.  Lex the contents of a choice macro, as though the macro weren't there.
-        // Pass through handling any links, and produce an error otherwise.
+        // Pass through handling any links, ignore newline at end, and produce an error otherwise.
         var choiceError : TweeError?
-        lexer.lex(string: expr, includeNewlines: false) { (token, _) in
+        lexer.lex(string: expr) { (token, _) in
             if choiceError == nil {
                 switch token {
                 case .Link:
                     self.handleToken(token: token, location: location)
+                case .Newline:
+                    // ignore newline at end of parse
+                    break
                 case .Error(_, let message):
                     choiceError = TweeError(type: .InvalidChoiceSyntax, location: location, message: "Error while parsing choice: \(message)")
                 default:
