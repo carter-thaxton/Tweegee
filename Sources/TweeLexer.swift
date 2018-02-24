@@ -73,16 +73,16 @@ class TweeLexer {
     }
 
     func lex(string: String, filename: String? = nil, includeNewlines: Bool = true, block: @escaping (TweeToken, TweeLocation) -> Void) {
-        var location = TweeLocation(filename: filename, line: nil, lineNumber: 1)
+        var location = TweeLocation(filename: filename, passage: nil, line: nil, lineNumber: 1)
         let lines = string.components(separatedBy: .newlines)  // TODO: consider enumerateLines, which doesn't work on Linux
         for line in lines {
             location.line = line
-            lex(line: line, location: location, includeNewline: includeNewlines, block: block)
+            lex(line: line, location: &location, includeNewline: includeNewlines, block: block)
             location.lineNumber += 1
         }
     }
 
-    func lex(line: String, location: TweeLocation, includeNewline: Bool, block handleToken: (TweeToken, TweeLocation) -> Void) {
+    func lex(line: String, location: inout TweeLocation, includeNewline: Bool, block handleToken: (TweeToken, TweeLocation) -> Void) {
         if let matches = line.match(regex: passageHeaderRegex) {
             let name = matches[1]!.trimmingWhitespace()
             let tags = matches[2]
@@ -95,7 +95,8 @@ class TweeLexer {
             if posx != nil && posy != nil {
                 pos = CGPoint(x: Int(posx!)!, y: Int(posy!)!)
             }
-            
+
+            location.passage = name  // keep track of most recent passage name in location
             handleToken(.Passage(name: name, tags: tagsArr, position: pos), location)
         } else {
             let text = line.trimmingWhitespace()

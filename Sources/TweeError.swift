@@ -14,7 +14,8 @@ struct TweeError : Error, AsJson {
     let message : String
     
     func asJson() -> Dict {
-        return ["type": String(describing: type), "lineNumber": location.lineNumber, "line": location.line ?? NSNull(), "message": message]
+        return ["type": String(describing: type), "passage": location.passage ?? NSNull(),
+                "lineNumber": location.lineNumber, "line": location.line ?? NSNull(), "message": message]
     }
 }
 
@@ -38,6 +39,7 @@ enum TweeErrorType : Equatable {
 
 struct TweeLocation {
     var filename : String?
+    var passage: String?
     var line : String?
     var lineNumber : Int
 }
