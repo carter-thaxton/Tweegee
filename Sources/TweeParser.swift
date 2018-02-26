@@ -50,6 +50,7 @@ class TweeParser {
         ensureNoOpenStatements()
         parseSpecialPassages()
         checkMissingAndUnreferencedPassages()
+        calculateWordCount()
         return story
     }
 
@@ -99,6 +100,17 @@ class TweeParser {
         // TODO: check for unreferenced passages
         // Create a set of passages by name, and remove each name
         // var passageNames = Set(story.passagesByName.keys)
+    }
+    
+    private func calculateWordCount() {
+        var wordCount = 0
+        story.visit() { (stmt) in
+            if let textStmt = stmt as? TweeTextStatement {
+                let words = textStmt.text.split(separator: " ", omittingEmptySubsequences: true)
+                wordCount += words.count
+            }
+        }
+        story.wordCount = wordCount
     }
     
     private func ensureNoOpenStatements() {

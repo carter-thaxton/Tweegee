@@ -13,6 +13,7 @@ class TweeStory : AsJson {
     var passagesInOrder = [TweePassage]()
     
     var passageCount : Int { return passagesInOrder.count }
+    var wordCount : Int = 0
     
     var startPassageName : String = "Start"
     var title : String?
@@ -66,9 +67,11 @@ class TweeStory : AsJson {
         for error in errors {
             errorsData.append(error.asJson())
         }
+        
+        let statistics = ["passageCount": passageCount, "wordCount": wordCount]
 
-        return ["title": title ?? NSNull(), "author": author ?? NSNull(), "start": startPassageName, "passageCount": passageCount,
-                      "errors": errorsData, "passages": includePassages ? passagesData : NSNull()]
+        return ["title": title ?? NSNull(), "author": author ?? NSNull(), "start": startPassageName, "errors": errorsData,
+                "statistics": statistics, "passages": includePassages ? passagesData : NSNull()]
     }
 
     func visit(fn: (TweeStatement) -> Void) {

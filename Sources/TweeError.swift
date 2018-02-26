@@ -39,10 +39,3 @@ enum TweeErrorType : Equatable {
     case UnreferencedPassage
 }
 
-struct TweeLocation {
-    var filename : String?
-    var passage: String?
-    var line : String?
-    var lineNumber : Int
-    var passageLineNumber : Int
-}
