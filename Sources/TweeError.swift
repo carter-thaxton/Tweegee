@@ -14,7 +14,7 @@ struct TweeError : Error, AsJson {
     let message : String
     
     func asJson() -> Dict {
-        return ["type": String(describing: type), "passage": location.passage ?? NSNull(),
+        return ["type": String(describing: type), "passage": location.passage ?? NSNull(), "passageLineNumber": location.passageLineNumber,
                 "lineNumber": location.lineNumber, "line": location.line ?? NSNull(), "message": message]
     }
 }
@@ -42,4 +42,5 @@ struct TweeLocation {
     var passage: String?
     var line : String?
     var lineNumber : Int
+    var passageLineNumber : Int
 }
