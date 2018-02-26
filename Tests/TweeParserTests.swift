@@ -373,6 +373,10 @@ class TweeParserTests: XCTestCase {
 
             ::ChoicesMixed2
             [[choice1]] | <<choice [[Choice 2|choice2]]>>
+
+            ::choice1
+
+            ::choice2
         """)
         
         func checkTwoChoices(_ name: String) {

@@ -42,6 +42,10 @@ class TweeStatement : AsJson {
     func asJson() -> Dict {
         fatalError("Cannot call toJSON() on top-level twee statement")
     }
+    
+    func visit(fn: (TweeStatement) -> Void) {
+        fn(self)
+    }
 }
 
 class TweeCodeBlock {
@@ -63,6 +67,12 @@ class TweeCodeBlock {
             result.append(stmt.asJson())
         }
         return result
+    }
+    
+    func visit(fn: (TweeStatement) -> Void) {
+        for stmt in statements {
+            stmt.visit(fn: fn)
+        }
     }
 }
 
@@ -97,6 +107,11 @@ class TweePassage : TweeStatement, NestableStatement {
     
     override func asJson() -> Dict {
         return ["name": self.name, "tags": self.tags, "statements": block.asJson()]
+    }
+    
+    override func visit(fn: (TweeStatement) -> Void) {
+        super.visit(fn: fn)
+        block.visit(fn: fn)
     }
 }
 
@@ -199,6 +214,11 @@ class TweeDelayStatement : TweeStatement, NestableStatement {
     override func asJson() -> Dict {
         return ["_type": "delay", "expression": expression.string, "statements": block.asJson()]
     }
+
+    override func visit(fn: (TweeStatement) -> Void) {
+        super.visit(fn: fn)
+        block.visit(fn: fn)
+    }
 }
 
 class TweeIfStatement : TweeStatement, NestableStatement {
@@ -258,5 +278,13 @@ class TweeIfStatement : TweeStatement, NestableStatement {
             elseData = elseClause!.block.asJson()
         }
         return ["_type": "if", "clauses": clauseData, "else": elseData]
+    }
+
+    override func visit(fn: (TweeStatement) -> Void) {
+        super.visit(fn: fn)
+        for clause in clauses {
+            clause.block.visit(fn: fn)
+        }
+        elseClause?.block.visit(fn: fn)
     }
 }

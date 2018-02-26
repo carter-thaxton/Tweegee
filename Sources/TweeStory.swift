@@ -70,4 +70,27 @@ class TweeStory : AsJson {
         return ["title": title ?? NSNull(), "author": author ?? NSNull(), "start": startPassageName, "passageCount": passageCount,
                       "errors": errorsData, "passages": includePassages ? passagesData : NSNull()]
     }
+
+    func visit(fn: (TweeStatement) -> Void) {
+        for passage in passagesInOrder {
+            passage.visit(fn: fn)
+        }
+    }
+
+    func getAllLinks() -> [TweeLinkStatement] {
+        var result = [TweeLinkStatement]()
+        
+        visit() { (stmt) in
+            if let link = stmt as? TweeLinkStatement {
+                result.append(link)
+            } else if let choice = stmt as? TweeChoiceStatement {
+                result.append(contentsOf: choice.choices)
+            } else if let include = stmt as? TweeIncludeStatement {
+                // TODO: if include.passageExpr.isLiteral
+                _ = include
+            }
+        }
+        
+        return result
+    }
 }

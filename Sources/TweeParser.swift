@@ -49,6 +49,7 @@ class TweeParser {
     private func finish() -> TweeStory {
         ensureNoOpenStatements()
         parseSpecialPassages()
+        checkMissingAndUnreferencedPassages()
         return story
     }
 
@@ -81,7 +82,25 @@ class TweeParser {
             }
         }
     }
+    
+    private func checkMissingAndUnreferencedPassages() {
+        let links = story.getAllLinks()
+        for link in links {
+            if story.passagesByName[link.name] == nil {
+                story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '" + link.name + "' but no passage exists with that name"))
+            }
+        }
 
+        // TODO: check for start passage
+        //        if story.startPassage == nil {
+        //            story.errors.append(TweeError(type: .MissingPassage, location: nil, message: "Missing start passage named '" + story.startPassageName + "'"))
+        //        }
+        
+        // TODO: check for unreferenced passages
+        // Create a set of passages by name, and remove each name
+        // var passageNames = Set(story.passagesByName.keys)
+    }
+    
     private func ensureNoOpenStatements() {
         if let stmt = currentStatement {
             if silently {
