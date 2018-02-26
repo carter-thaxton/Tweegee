@@ -85,10 +85,15 @@ class TweeParser {
     }
     
     private func checkMissingAndUnreferencedPassages() {
+        var unreferencedPassageNames = Set(story.passagesByName.keys)
+
+        // Make sure every link refers to a passage
         let links = story.getAllLinks()
         for link in links {
             if story.passagesByName[link.name] == nil {
-                story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '" + link.name + "' but no passage exists with that name"))
+                story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.name)' but no passage exists with that name"))
+            } else {
+                unreferencedPassageNames.remove(link.name)
             }
         }
 
@@ -96,10 +101,14 @@ class TweeParser {
         //        if story.startPassage == nil {
         //            story.errors.append(TweeError(type: .MissingPassage, location: nil, message: "Missing start passage named '" + story.startPassageName + "'"))
         //        }
-        
-        // TODO: check for unreferenced passages
-        // Create a set of passages by name, and remove each name
-        // var passageNames = Set(story.passagesByName.keys)
+        unreferencedPassageNames.remove(story.startPassageName)
+
+        // Any remaining passages are unreferenced
+        for name in unreferencedPassageNames {
+            if let p = story.passagesByName[name] {
+                story.errors.append(TweeError(type: .UnreferencedPassage, location: p.location, message: "Passage '\(name)' is never referenced"))
+            }
+        }
     }
     
     private func calculateWordCount() {

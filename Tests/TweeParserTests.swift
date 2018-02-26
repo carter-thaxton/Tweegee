@@ -26,9 +26,10 @@ class TweeParserTests: XCTestCase {
 
     func testBasicParse() {
         let story = parse("""
-            ::Passage1
+            ::Start
             Some text
             Some more text
+            [[Passage2]]
 
             ::Passage2
             <<set $test = 5>>
@@ -36,19 +37,19 @@ class TweeParserTests: XCTestCase {
         """)
         
         XCTAssertEqual(story.passageCount, 2)
-        XCTAssertEqual(story.passagesByName["Passage1"]!.location.lineNumber, 1)
-        XCTAssertEqual(story.passagesByName["Passage2"]!.location.lineNumber, 5)
-        XCTAssertNil(story.passagesByName["Passage1"]!.location.filename)
+        XCTAssertEqual(story.passagesByName["Start"]!.location.lineNumber, 1)
+        XCTAssertEqual(story.passagesByName["Passage2"]!.location.lineNumber, 6)
+        XCTAssertNil(story.passagesByName["Start"]!.location.filename)
         XCTAssertNil(story.passagesByName["Passage2"]!.location.filename)
-        XCTAssertNil(story.startPassage)
+        XCTAssertNotNil(story.startPassage)
 
-        checkCodeForPassage(story, "Passage1", "TNTN")
+        checkCodeForPassage(story, "Start", "TNTNL")
         checkCodeForPassage(story, "Passage2", "SI(T:T)N")
     }
 
     func testNestedStatements() {
         let story = parse("""
-            ::Passage1
+            ::Start
             <<set $test = 5>>
             <<if $test is 5>>
                 Say this
@@ -81,9 +82,9 @@ class TweeParserTests: XCTestCase {
         """)
 
         XCTAssertEqual(story.passageCount, 5)
-        XCTAssertNil(story.startPassage)
+        XCTAssertNotNil(story.startPassage)
 
-        checkCodeForPassage(story, "Passage1", "SI(TNI(I(T:T)NL:I(TNL:TN)L):L)")
+        checkCodeForPassage(story, "Start", "SI(TNI(I(T:T)NL:I(TNL:TN)L):L)")
 
         checkCodeForPassage(story, "Passage2", "TN")
         checkCodeForPassage(story, "Passage3", "TN")
@@ -337,7 +338,7 @@ class TweeParserTests: XCTestCase {
             <<else>>
                 X is small.
             <<endif>>
-        """)
+        """, ignoreErrors: [.UnreferencedPassage])  // TODO: don't ignore this error, once we can parse expressions.
 
         checkCodeForPassage(story, "Start", "TNSUTNSUTN")
         checkCodeForPassage(story, "Included", "TNI(TN:TN)")
@@ -377,7 +378,7 @@ class TweeParserTests: XCTestCase {
             ::choice1
 
             ::choice2
-        """)
+        """, ignoreErrors: [.UnreferencedPassage])
         
         func checkTwoChoices(_ name: String) {
             guard let passage = story.passagesByName[name] else {
@@ -417,11 +418,13 @@ class TweeParserTests: XCTestCase {
     
     // MARK: Helper methods
 
-    func parse(_ string : String, allowErrors: Bool = false) -> TweeStory {
+    func parse(_ string : String, allowErrors: Bool = false, ignoreErrors: [TweeErrorType] = []) -> TweeStory {
         let parser = TweeParser()
         let story = parser.parse(string: string)
+
         if !allowErrors {
-            XCTAssert(story.errors.isEmpty, "Errors produced while parsing: \(story.errors)")
+            let errors = story.errors.filter { !ignoreErrors.contains($0.type) }
+            XCTAssert(errors.isEmpty, "Errors produced while parsing: \(errors)")
         }
         return story
     }
