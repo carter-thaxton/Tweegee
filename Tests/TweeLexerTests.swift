@@ -159,7 +159,7 @@ class TweeLexerTests: XCTestCase {
                 XCTAssertEqual(error.type, expectedError!)
             }
             if lineNumber != nil {
-                XCTAssertEqual(error.location.lineNumber, lineNumber)
+                XCTAssertEqual(error.location?.lineNumber, lineNumber)
             }
         }
     }

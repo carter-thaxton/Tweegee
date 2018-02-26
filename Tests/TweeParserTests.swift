@@ -114,6 +114,17 @@ class TweeParserTests: XCTestCase {
         checkCodeForPassage(story, "Passage2", "TN")
     }
 
+
+    func testMissingStartPassage() {
+        let story = checkParserFails("""
+            ::Passage1
+            Some text
+        """, expectedError: .MissingPassage)
+
+        XCTAssertEqual(story.passageCount, 1)
+        XCTAssertNil(story.startPassage)
+    }
+
     func testDuplicatePassages() {
         let story = parse("""
             ::Passage1
@@ -435,7 +446,7 @@ class TweeParserTests: XCTestCase {
                 XCTAssertEqual(error.type, expectedError!)
             }
             if lineNumber != nil {
-                XCTAssertEqual(error.location.lineNumber, lineNumber)
+                XCTAssertEqual(error.location?.lineNumber, lineNumber)
             }
             return
         } else {
@@ -443,9 +454,10 @@ class TweeParserTests: XCTestCase {
         }
     }
     
-    func checkParserFails(_ string: String, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) {
+    @discardableResult func checkParserFails(_ string: String, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) -> TweeStory {
         let story = parse(string, allowErrors: true)
         checkError(story: story, expectedError: expectedError, lineNumber: lineNumber)
+        return story
     }
     
     func checkCodeForPassage(_ story: TweeStory, _ passageName: String, _ pattern: String) {

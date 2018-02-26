@@ -97,10 +97,10 @@ class TweeParser {
             }
         }
 
-        // TODO: check for start passage
-        //        if story.startPassage == nil {
-        //            story.errors.append(TweeError(type: .MissingPassage, location: nil, message: "Missing start passage named '" + story.startPassageName + "'"))
-        //        }
+        // Check for start passage
+        if story.startPassage == nil {
+            story.errors.append(TweeError(type: .MissingPassage, location: nil, message: "Missing start passage named '\(story.startPassageName)'"))
+        }
         unreferencedPassageNames.remove(story.startPassageName)
 
         // Any remaining passages are unreferenced
