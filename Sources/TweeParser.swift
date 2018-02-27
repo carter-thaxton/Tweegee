@@ -24,6 +24,8 @@ class TweeParser {
     var currentStatement : NestableStatement? { return currentStatements.last }
     var currentCodeBlock : TweeCodeBlock? { return currentStatement?.block }
 
+    var linkDelayText = "Taylor is busy"  // This is only used when using link-style delays, e.g. [[delay 10m|nextpassage]]
+    
     // MARK: Public Methods
 
     func parse(filename: String) throws -> TweeStory {
@@ -216,14 +218,31 @@ class TweeParser {
 
             case .Link(let name, let title):
                 try ensureCodeBlock()
-                let stmt = TweeLinkStatement(location: location, name: name, title: title)
+                let linkStmt = TweeLinkStatement(location: location, name: name, title: title)
 
                 // check if link is part of a list of choices
-                if let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement {
-                    choiceStmt.choices.append(stmt)
+                let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement
+
+                // end any text before following a link or choice
+                endLineOfText(location: location)
+
+                if choiceStmt != nil {
+                    choiceStmt!.choices.append(linkStmt)
                 } else {
-                    endLineOfText(location: location)  // end any text before following a link
-                    currentCodeBlock!.add(stmt)
+                    // if link has a title like "delay 10m", then insert a delay before following the link, using linkDelayText, e.g. "Taylor is busy"
+                    if let delay = title?.match(pattern: "^delay\\s+(\\w+)$") {
+                        let delayStr = "\"\(delay[1]!)\""  // wrap in quotes, to parse as string
+                        let delayExpr = try parse(expression: delayStr, location: location, for: "delayLink")
+                        let delayStmt = TweeDelayStatement(location: location, expression: delayExpr)
+                        delayStmt.block.add(TweeTextStatement(location: location, text: linkDelayText))
+                        currentCodeBlock!.add(delayStmt)
+
+                        // don't use any title for the link
+                        linkStmt.title = nil
+                    }
+                    
+                    // add the link
+                    currentCodeBlock!.add(linkStmt)
                 }
 
             case .Macro(let name, let expr):

@@ -135,8 +135,9 @@ class TweeTextStatement : TweeStatement {
 }
 
 class TweeLinkStatement : TweeStatement {
+    // TODO: support link name as expression
     let name : String
-    let title : String?
+    var title : String?
     
     init(location: TweeLocation, name: String, title: String?) {
         self.name = name
