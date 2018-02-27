@@ -267,7 +267,7 @@ class TweeIfStatement : TweeStatement, NestableStatement {
     override func asJson() -> Dict {
         var clauseData = DictArr()
         for clause in clauses {
-            clauseData.append(["cond": clause.condition?.string ?? NSNull(), "statements": clause.block.asJson()])
+            clauseData.append(["condition": clause.condition?.string ?? NSNull(), "statements": clause.block.asJson()])
         }
         return ["_type": "if", "clauses": clauseData]
     }
