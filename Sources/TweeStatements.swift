@@ -225,60 +225,51 @@ class TweeDelayStatement : TweeStatement, NestableStatement {
 class TweeIfStatement : TweeStatement, NestableStatement {
     struct IfClause {
         let location : TweeLocation
-        let condition : TweeExpression
+        let condition : TweeExpression?
         let block = TweeCodeBlock()
         
-        init(location: TweeLocation, condition: TweeExpression) {
+        init(location: TweeLocation, condition: TweeExpression?) {
             self.location = location
             self.condition = condition
         }
     }
-    
-    struct ElseClause {
-        let location : TweeLocation
-        let block = TweeCodeBlock()
-        
-        init(location: TweeLocation) {
-            self.location = location
-        }
-    }
-    
+
+    // each condition / block is a clause
+    // else clause is just a final clause without a condition
     var clauses = [IfClause]()
-    var elseClause : ElseClause?
-    
-    var ifCondition : TweeExpression { return clauses[0].condition }
+
+    var ifCondition : TweeExpression? { return clauses[0].condition }
     var ifBlock : TweeCodeBlock { return clauses[0].block }
-    
+    var elseClause : IfClause? { return clauses.last!.condition == nil ? clauses.last! : nil }
+
     // to conform to NestableStatement
     var block : TweeCodeBlock {
-        return elseClause?.block ?? clauses.last!.block
+        return clauses.last!.block
     }
     
     init(location: TweeLocation, condition: TweeExpression) {
         clauses.append(IfClause(location: location, condition: condition))  // Always initialize with at least one clause
         super.init(location: location)
     }
-    
+
     func addElseIf(location: TweeLocation, condition: TweeExpression) -> TweeCodeBlock {
+        assert(elseClause == nil, "Cannot add elseIf after else clause")
         clauses.append(IfClause(location: location, condition: condition))
-        return clauses.last!.block
+        return block
     }
     
     func addElse(location: TweeLocation) -> TweeCodeBlock {
-        elseClause = ElseClause(location: location)
-        return elseClause!.block
+        assert(elseClause == nil, "Cannot add else after else clause")
+        clauses.append(IfClause(location: location, condition: nil))
+        return block
     }
     
     override func asJson() -> Dict {
         var clauseData = DictArr()
         for clause in clauses {
-            clauseData.append(["cond": clause.condition.string, "statements": clause.block.asJson()])
+            clauseData.append(["cond": clause.condition?.string ?? NSNull(), "statements": clause.block.asJson()])
         }
-        var elseData : Any = NSNull()
-        if elseClause != nil {
-            elseData = elseClause!.block.asJson()
-        }
-        return ["_type": "if", "clauses": clauseData, "else": elseData]
+        return ["_type": "if", "clauses": clauseData]
     }
 
     override func visit(fn: (TweeStatement) -> Void) {
@@ -286,6 +277,5 @@ class TweeIfStatement : TweeStatement, NestableStatement {
         for clause in clauses {
             clause.block.visit(fn: fn)
         }
-        elseClause?.block.visit(fn: fn)
     }
 }

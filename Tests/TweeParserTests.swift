@@ -511,9 +511,13 @@ class TweeParserTests: XCTestCase {
                 result += ")"
             case let ifStmt as TweeIfStatement:
                 result += "I("
-                result += ifStmt.clauses.map({ codeBlockToPattern($0.block) }).joined(separator: ",")
-                if let elseClause = ifStmt.elseClause {
-                    result += ":" + codeBlockToPattern(elseClause.block)
+                for (index, clause) in ifStmt.clauses.enumerated() {
+                    if clause.condition == nil {
+                        result += ":"  // else
+                    } else if index > 0 {
+                        result += ","  // elseif
+                    }
+                    result += codeBlockToPattern(clause.block)
                 }
                 result += ")"
             default:
