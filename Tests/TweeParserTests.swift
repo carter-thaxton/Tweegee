@@ -379,12 +379,10 @@ class TweeParserTests: XCTestCase {
             After delay
         """)
         
-        checkCodeForPassage(story, "Start", "TND(T)L")  // Link with delay results in delay with text, then link
+        checkCodeForPassage(story, "Start", "TND()L")  // Link with delay results in empty delay, then link
         let delayStmt = story.startPassage!.block.statements[2] as! TweeDelayStatement
         XCTAssertEqual(delayStmt.expression.string, "\"10m\"")
-
-        let textStmt = delayStmt.block.statements[0] as! TweeTextStatement
-        XCTAssertEqual(textStmt.text, "Taylor is busy")
+        XCTAssertEqual(delayStmt.block.statements.count, 0)
     }
 
     func testChoiceSyntax() {
