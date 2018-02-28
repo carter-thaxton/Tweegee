@@ -24,7 +24,7 @@ class TweeParser {
     var currentStatement : NestableStatement? { return currentStatements.last }
     var currentCodeBlock : TweeCodeBlock? { return currentStatement?.block }
 
-    var linkDelayText = "Taylor is busy"  // This is only used when using link-style delays, e.g. [[delay 10m|nextpassage]]
+    var linkDelayText = "[Taylor is busy]"  // This is only used when using link-style delays, e.g. [[delay 10m|nextpassage]]
     
     // MARK: Public Methods
 
