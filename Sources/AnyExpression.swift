@@ -526,10 +526,10 @@ public struct AnyExpression: CustomStringConvertible {
         // Evaluation isn't thread-safe due to shared values
         // so we use objc_sync_enter/exit to prevent re-entrancy
         evaluator = {
-            objc_sync_enter(box)
+//            objc_sync_enter(box)          // CJT: doesn't work on linux
             defer {
                 box.values = literals
-                objc_sync_exit(box)
+//                objc_sync_exit(box)       // CJT: doesn't work on linux
             }
             let value = try expression.evaluate()
             return box.load(value)
@@ -1092,7 +1092,7 @@ extension Substring: _String {
 
 extension NSString: _String {
     var substring: Substring {
-        return Substring(self as String)
+        return Substring(self.bridge())  // CJT: fix for linux.  use bridge() instead of "as String"
     }
 }
 
