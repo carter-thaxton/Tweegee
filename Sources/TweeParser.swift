@@ -105,9 +105,12 @@ class TweeParser {
         unreferencedPassageNames.remove(story.startPassageName)
 
         // Any remaining passages are unreferenced
+        // However, adding a tag of 'referenced' will suppress this error
         for name in unreferencedPassageNames {
             if let p = story.passagesByName[name] {
-                story.errors.append(TweeError(type: .UnreferencedPassage, location: p.location, message: "Passage '\(name)' is never referenced"))
+                if !p.tags.contains("referenced") {
+                    story.errors.append(TweeError(type: .UnreferencedPassage, location: p.location, message: "Passage '\(name)' is never referenced"))
+                }
             }
         }
     }
