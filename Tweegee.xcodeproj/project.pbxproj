@@ -33,6 +33,11 @@
 		AD83BCDA203BA33400D06899 /* TweeExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCD8203BA33400D06899 /* TweeExpression.swift */; };
 		AD83BCE2203CF60B00D06899 /* JSONHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */; };
 		AD83BCE3203CF60B00D06899 /* JSONHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */; };
+		ADE77FCF2047C331004E91A9 /* AnyExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FCD2047C331004E91A9 /* AnyExpression.swift */; };
+		ADE77FD02047C331004E91A9 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FCE2047C331004E91A9 /* Expression.swift */; };
+		ADE77FD22047C483004E91A9 /* ExpressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FD12047C483004E91A9 /* ExpressionTests.swift */; };
+		ADE77FD32047C544004E91A9 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FCE2047C331004E91A9 /* Expression.swift */; };
+		ADE77FD42047C547004E91A9 /* AnyExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FCD2047C331004E91A9 /* AnyExpression.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -67,6 +72,9 @@
 		AD6F8E4A2044A32D00C4F84D /* TweeLocation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeLocation.swift; sourceTree = "<group>"; };
 		AD83BCD8203BA33400D06899 /* TweeExpression.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeExpression.swift; sourceTree = "<group>"; };
 		AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JSONHelpers.swift; sourceTree = "<group>"; };
+		ADE77FCD2047C331004E91A9 /* AnyExpression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyExpression.swift; sourceTree = "<group>"; };
+		ADE77FCE2047C331004E91A9 /* Expression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expression.swift; sourceTree = "<group>"; };
+		ADE77FD12047C483004E91A9 /* ExpressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpressionTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -120,6 +128,8 @@
 				AD3F5134200EA8C900F1BE3C /* StringHelpers.swift */,
 				AD3F5137201042AC00F1BE3C /* StringScanner.swift */,
 				AD83BCE1203CF60B00D06899 /* JSONHelpers.swift */,
+				ADE77FCE2047C331004E91A9 /* Expression.swift */,
+				ADE77FCD2047C331004E91A9 /* AnyExpression.swift */,
 			);
 			path = Sources;
 			sourceTree = "<group>";
@@ -129,6 +139,7 @@
 			children = (
 				AD3F513C202BC51D00F1BE3C /* TweeLexerTests.swift */,
 				AD3F5141202BC6D300F1BE3C /* TweeParserTests.swift */,
+				ADE77FD12047C483004E91A9 /* ExpressionTests.swift */,
 				AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */,
 				AD3F5103200E6BFD00F1BE3C /* Info.plist */,
 			);
@@ -236,12 +247,14 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				ADE77FD02047C331004E91A9 /* Expression.swift in Sources */,
 				AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */,
 				AD6F8E4B2044A32D00C4F84D /* TweeLocation.swift in Sources */,
 				AD83BCE2203CF60B00D06899 /* JSONHelpers.swift in Sources */,
 				AD3F513F202BC6B500F1BE3C /* TweeParser.swift in Sources */,
 				AD3F5144202BCC8C00F1BE3C /* TweeStory.swift in Sources */,
 				AD562D33203E2A1C00BC2BBA /* TweeStatements.swift in Sources */,
+				ADE77FCF2047C331004E91A9 /* AnyExpression.swift in Sources */,
 				AD3F5147202BD3ED00F1BE3C /* TweeError.swift in Sources */,
 				AD83BCD9203BA33400D06899 /* TweeExpression.swift in Sources */,
 				AD3F5135200EA8C900F1BE3C /* StringHelpers.swift in Sources */,
@@ -260,6 +273,7 @@
 				AD3F5145202BCC8C00F1BE3C /* TweeStory.swift in Sources */,
 				AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */,
 				AD562D34203E2A1C00BC2BBA /* TweeStatements.swift in Sources */,
+				ADE77FD42047C547004E91A9 /* AnyExpression.swift in Sources */,
 				AD3F513D202BC51D00F1BE3C /* TweeLexerTests.swift in Sources */,
 				AD3F5148202BD3ED00F1BE3C /* TweeError.swift in Sources */,
 				AD3F5136200EA8C900F1BE3C /* StringHelpers.swift in Sources */,
@@ -267,6 +281,8 @@
 				AD3F5133200E9CDF00F1BE3C /* TweeLexer.swift in Sources */,
 				AD3F5142202BC6D300F1BE3C /* TweeParserTests.swift in Sources */,
 				AD3F5139201042AC00F1BE3C /* StringScanner.swift in Sources */,
+				ADE77FD22047C483004E91A9 /* ExpressionTests.swift in Sources */,
+				ADE77FD32047C544004E91A9 /* Expression.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

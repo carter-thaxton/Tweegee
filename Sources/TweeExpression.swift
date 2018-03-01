@@ -15,8 +15,11 @@ import Foundation
 //    unop (op, expr1)  {+ - !}
 
 //  synonyms:
+//    !     not
+//    &&    and
+//    ||    or
 //    ==    is, eq
-//    !=    isnt, ne, ne
+//    !=    isnt, ne, neq
 //    <     lt
 //    <=    le, lte
 //    >     gt
@@ -27,6 +30,19 @@ class TweeExpression {
     let string : String
 
     init(from string: String) {
-        self.string = string
+        self.string = TweeExpression.normalize(string)
+    }
+
+    static func normalize(_ string: String) -> String {
+        return string
+            .replacing(pattern: "\\b(not)\\b", with: "!")
+            .replacing(pattern: "\\b(and)\\b", with: "&&")
+            .replacing(pattern: "\\b(or)\\b", with: "||")
+            .replacing(pattern: "\\b(is|eq)\\b", with: "==")
+            .replacing(pattern: "\\b(isnt|ne|neq)\\b", with: "!=")
+            .replacing(pattern: "\\b(lt)\\b", with: "<")
+            .replacing(pattern: "\\b(le|lte)\\b", with: "<=")
+            .replacing(pattern: "\\b(gt)\\b", with: ">")
+            .replacing(pattern: "\\b(ge|gte)\\b", with: ">=")
     }
 }
