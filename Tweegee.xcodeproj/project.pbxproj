@@ -8,7 +8,6 @@
 
 /* Begin PBXBuildFile section */
 		AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F50F4200E6BB800F1BE3C /* main.swift */; };
-		AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */; };
 		AD3F512C200E900400F1BE3C /* Playlist.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512B200E900400F1BE3C /* Playlist.tw2 */; };
 		AD3F512E200E905700F1BE3C /* Test.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512D200E905700F1BE3C /* Test.tw2 */; };
 		AD3F5132200E9CDF00F1BE3C /* TweeLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5131200E9CDF00F1BE3C /* TweeLexer.swift */; };
@@ -38,6 +37,7 @@
 		ADE77FD22047C483004E91A9 /* ExpressionTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FD12047C483004E91A9 /* ExpressionTests.swift */; };
 		ADE77FD32047C544004E91A9 /* Expression.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FCE2047C331004E91A9 /* Expression.swift */; };
 		ADE77FD42047C547004E91A9 /* AnyExpression.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FCD2047C331004E91A9 /* AnyExpression.swift */; };
+		ADE77FD62048C2F2004E91A9 /* StringTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = ADE77FD52048C2F2004E91A9 /* StringTests.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -56,7 +56,6 @@
 		AD3F50F1200E6BB700F1BE3C /* tweegee */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = tweegee; sourceTree = BUILT_PRODUCTS_DIR; };
 		AD3F50F4200E6BB800F1BE3C /* main.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = main.swift; sourceTree = "<group>"; };
 		AD3F50FF200E6BFD00F1BE3C /* TweegeeTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = TweegeeTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
-		AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweegeeTests.swift; sourceTree = "<group>"; };
 		AD3F5103200E6BFD00F1BE3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD3F512B200E900400F1BE3C /* Playlist.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Playlist.tw2; sourceTree = "<group>"; };
 		AD3F512D200E905700F1BE3C /* Test.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Test.tw2; sourceTree = "<group>"; };
@@ -75,6 +74,7 @@
 		ADE77FCD2047C331004E91A9 /* AnyExpression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyExpression.swift; sourceTree = "<group>"; };
 		ADE77FCE2047C331004E91A9 /* Expression.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Expression.swift; sourceTree = "<group>"; };
 		ADE77FD12047C483004E91A9 /* ExpressionTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExpressionTests.swift; sourceTree = "<group>"; };
+		ADE77FD52048C2F2004E91A9 /* StringTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringTests.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -140,7 +140,7 @@
 				AD3F513C202BC51D00F1BE3C /* TweeLexerTests.swift */,
 				AD3F5141202BC6D300F1BE3C /* TweeParserTests.swift */,
 				ADE77FD12047C483004E91A9 /* ExpressionTests.swift */,
-				AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */,
+				ADE77FD52048C2F2004E91A9 /* StringTests.swift */,
 				AD3F5103200E6BFD00F1BE3C /* Info.plist */,
 			);
 			path = Tests;
@@ -271,9 +271,9 @@
 				AD83BCE3203CF60B00D06899 /* JSONHelpers.swift in Sources */,
 				AD83BCDA203BA33400D06899 /* TweeExpression.swift in Sources */,
 				AD3F5145202BCC8C00F1BE3C /* TweeStory.swift in Sources */,
-				AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */,
 				AD562D34203E2A1C00BC2BBA /* TweeStatements.swift in Sources */,
 				ADE77FD42047C547004E91A9 /* AnyExpression.swift in Sources */,
+				ADE77FD62048C2F2004E91A9 /* StringTests.swift in Sources */,
 				AD3F513D202BC51D00F1BE3C /* TweeLexerTests.swift in Sources */,
 				AD3F5148202BD3ED00F1BE3C /* TweeError.swift in Sources */,
 				AD3F5136200EA8C900F1BE3C /* StringHelpers.swift in Sources */,

@@ -13,35 +13,29 @@ class ExpressionTests: XCTestCase {
         continueAfterFailure = false
     }
     
-    func testStringReplace() {
-        let str = "one, two, three, many"
-        let replaced = str.replacing(pattern: "\\bt(\\w+)\\b") { m in "XX" + m[1]! }
-        XCTAssertEqual(replaced, "one, XXwo, XXhree, many")
-    }
-    
     func testNormalizeExpression() {
         let str = TweeExpression.normalize("(a or b) and not (5 gt 6)")
         XCTAssertEqual(str, "(a || b) && ! (5 > 6)")
     }
     
     func testBasicExpression() throws {
-        testEvalAsString("'a' + 5", expect: "a5")
-        testEvalAsInt("6 + 5", expect: 11)
-        testEvalAsBool("false || true", expect: true)
+        checkEvalAsString("'a' + 5", expect: "a5")
+        checkEvalAsInt("6 + 5", expect: 11)
+        checkEvalAsBool("false || true", expect: true)
     }
 
 
-    func testEvalAsString(_ expr: String, expect: String) {
+    func checkEvalAsString(_ expr: String, expect: String) {
         let result = eval(expr) as String
         XCTAssertEqual(result, expect)
     }
 
-    func testEvalAsBool(_ expr: String, expect: Bool) {
+    func checkEvalAsBool(_ expr: String, expect: Bool) {
         let result = eval(expr) as Bool
         XCTAssertEqual(result, expect)
     }
     
-    func testEvalAsInt(_ expr: String, expect: Int) {
+    func checkEvalAsInt(_ expr: String, expect: Int) {
         let result = eval(expr) as Int
         XCTAssertEqual(result, expect)
     }
