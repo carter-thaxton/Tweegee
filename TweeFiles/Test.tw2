@@ -1,0 +1,35 @@
+::StoryTitle
+Test Syntax
+
+::Start
+<<set b = 3>>
+<<set $a = 0>>
+<<include "showA">>
+Next is delay:
+<<delay "5m">><<if $a is 0>>A is zero<<else>>A is <<$a>><<endif>><<enddelay>>
+Make a choice:
+[[Choose A|choiceA]] | [[Choose B|choiceB]]
+
+::choiceA
+<<delay "10m">><<set $a = 1>>Setting a to 1: <<include "showA">><<enddelay>>
+Done waiting
+[[nextphase]]
+
+::choiceB
+Setting a to 2
+<<set $a = 2>>
+[[delay 5m|nextphase]]
+
+::nextphase
+You win!
+<<include "showA">>
+[[The End]] | [[Back to Start|Start]]
+
+::The End [end] <421,622>
+Game over!
+
+::showA
+A = <<$a>>
+
+::Twee2Settings
+@story_start_name = 'Start'

@@ -47,6 +47,7 @@ class TweeParser {
     // MARK: Parser Implementation
 
     private func finish() -> TweeStory {
+        trimTrailingEmptyLinesOfRawTwee()
         ensureNoOpenStatements()
         parseSpecialPassages()
         checkMissingAndUnreferencedPassages()
@@ -143,12 +144,26 @@ class TweeParser {
 
     private func resetPassage() {
         currentStatements.removeAll()
-        currentPassage = nil
         lineHasText = false
         silently = false
     }
     
+    private func trimTrailingEmptyLinesOfRawTwee() {
+        if let passage = currentPassage {
+            var i = passage.rawTwee.count - 1
+            while (i > 0 && passage.rawTwee[i].trimmingWhitespace().isEmpty) {  // never remove first line
+                passage.rawTwee.remove(at: i)
+                i -= 1
+            }
+        }
+    }
+
     private func handleToken(token: TweeToken, location: TweeLocation) {
+        // collect lines for current passage
+        if case .Newline(let line) = token {
+            currentPassage?.rawTwee.append(line)
+        }
+        
         // return early while handling errors, up until the next passage symbol
         if handlingError {
             if case .Passage = token {
@@ -172,6 +187,7 @@ class TweeParser {
                 throw TweeError(type: type, location: location, message: message)
 
             case .Passage(let name, let tags, let position):
+                trimTrailingEmptyLinesOfRawTwee()
                 ensureNoOpenStatements()
                 resetPassage()
 
@@ -182,7 +198,7 @@ class TweeParser {
                 // if an existing passage already exists by name, add an error, but continue parsing
                 if let existing = existing {
                     story.errors.append(TweeError(type: .DuplicatePassageName, location: currentPassage!.location,
-                        message: "Passage \(existing.name) is already defined on line \(existing.location.lineNumber)"))
+                        message: "Passage \(existing.name) is already defined on line \(existing.location.fileLineNumber)"))
                 }
 
             case .Comment(let comment):

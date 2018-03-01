@@ -87,7 +87,8 @@ class TweePassage : TweeStatement, NestableStatement {
     let position : CGPoint?
     let tags : [String]
     let block = TweeCodeBlock()
-    
+    var rawTwee = [String]()
+
     init(location: TweeLocation, name: String, position: CGPoint?, tags: [String]) {
         self.name = name
         self.position = position
@@ -106,7 +107,7 @@ class TweePassage : TweeStatement, NestableStatement {
     }
     
     override func asJson() -> Dict {
-        return ["name": self.name, "tags": self.tags, "statements": block.asJson()]
+        return ["name": name, "tags": tags, "statements": block.asJson(), "code": rawTwee]
     }
     
     override func visit(fn: (TweeStatement) -> Void) {
@@ -130,7 +131,7 @@ class TweeTextStatement : TweeStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "text", "line": location.passageLineNumber, "text": self.text]
+        return ["_type": "text", "line": location.passageLineNumber, "text": text]
     }
 }
 
@@ -146,7 +147,7 @@ class TweeLinkStatement : TweeStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "link", "line": location.passageLineNumber, "passage": self.passage, "title": self.title ?? NSNull()]
+        return ["_type": "link", "line": location.passageLineNumber, "passage": passage, "title": title ?? NSNull()]
     }
 }
 

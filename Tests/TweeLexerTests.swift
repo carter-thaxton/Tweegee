@@ -20,19 +20,20 @@ class TweeLexerTests: XCTestCase {
             <<if $i > 0 >>I have <<$i>> items and costs <<3 * $i>> dollars<<else>>No items<<endif>>
             [[Choice 1|choice_1]] | [[ Choice 2 | choice_2 ]]
             // Comment is ignored
-        """,
+            """,
         tokens: [
             .Passage(name: "Start", tags: ["tag", "tag2"], position: CGPoint(x: 5, y: 25)),
+            .Newline(":: Start [tag tag2] <5,25>"),
             .Text("Some normal text"),
-            .Newline,
+            .Newline("Some normal text"),
             .Text("Brackets, like I <3 U, and/or [this] thing"),
-            .Newline,
+            .Newline("Brackets, like I <3 U, and/or [this] thing"),
             .Text("Text "),
             .Link(passage: "link", title: nil),
             .Text(" text"),
-            .Newline,
+            .Newline("Text [[link]] text"),
             .Macro(name: "set", expr: "$i = 5"),
-            .Newline,
+            .Newline("<<set $i = 5>>"),
             .Macro(name: "if", expr: "$i > 0"),
             .Text("I have "),
             .Macro(name: nil, expr: "$i"),
@@ -42,13 +43,13 @@ class TweeLexerTests: XCTestCase {
             .Macro(name: "else", expr: nil),
             .Text("No items"),
             .Macro(name: "endif", expr: nil),
-            .Newline,
+            .Newline("<<if $i > 0 >>I have <<$i>> items and costs <<3 * $i>> dollars<<else>>No items<<endif>>"),
             .Link(passage: "choice_1", title: "Choice 1"),
             .Text(" | "),
             .Link(passage: "choice_2", title: "Choice 2"),
-            .Newline,
+            .Newline("[[Choice 1|choice_1]] | [[ Choice 2 | choice_2 ]]"),
             .Comment("Comment is ignored"),
-            .Newline,
+            .Newline("// Comment is ignored"),
         ])
     }
     
@@ -63,11 +64,12 @@ class TweeLexerTests: XCTestCase {
                 [[go_here]]
             <<endif>>
             Text // then a comment
-        """,
+            """,
         tokens: [
             .Passage(name: "Start", tags: [], position: nil),
+            .Newline("::Start"),
             .Text("Some normal text"),
-            .Newline,
+            .Newline("Some normal text"),
             
             .Text("Text "),
             .Macro(name: "if", expr: "true"),
@@ -80,29 +82,29 @@ class TweeLexerTests: XCTestCase {
             .Macro(name: "endif", expr: nil),
             .Text("   "),
             .Macro(name: "endif", expr: nil),
-            .Newline,
+            .Newline("Text <<if true>>  two spaces  <<else>><<if true>>  initial space<<else>>trailing space  <<endif>>   <<endif>>"),
             
             .Macro(name: "if", expr: "true"),
-            .Newline,
+            .Newline("<<if true>>"),
 
             .Text("Say \""),
             .Macro(name: nil, expr: "$text"),
             .Text("\" and wave."),
-            .Newline,
+            .Newline("    Say \"<<$text>>\" and wave."),
             
             .Macro(name: "else", expr: nil),
             .Comment("whitespace before comment ignored"),
-            .Newline,
+            .Newline("<<else>>   // whitespace before comment ignored"),
             
             .Link(passage: "go_here", title: nil),
-            .Newline,
+            .Newline("    [[go_here]]"),
 
             .Macro(name: "endif", expr: nil),
-            .Newline,
+            .Newline("<<endif>>"),
 
             .Text("Text"),
             .Comment("then a comment"),
-            .Newline,
+            .Newline("Text // then a comment"),
         ])
     }
     
@@ -140,7 +142,12 @@ class TweeLexerTests: XCTestCase {
         var result = [TweeToken]()
         let lexer = TweeLexer()
         lexer.lex(string: string) { tok, _ in result.append(tok) }
-        XCTAssertEqual(result, tokens)
+        XCTAssertEqual(result.count, tokens.count)
+        for i in 0..<result.count {
+            let actual = result[i]
+            let expected = tokens[i]
+            XCTAssertEqual(actual, expected)
+        }
     }
 
     func checkLexerFails(_ string: String, expectedError: TweeErrorType? = nil, lineNumber: Int? = nil) {
@@ -159,7 +166,7 @@ class TweeLexerTests: XCTestCase {
                 XCTAssertEqual(error.type, expectedError!)
             }
             if lineNumber != nil {
-                XCTAssertEqual(error.location?.lineNumber, lineNumber)
+                XCTAssertEqual(error.location?.fileLineNumber, lineNumber)
             }
         }
     }

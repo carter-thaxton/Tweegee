@@ -12,11 +12,17 @@ struct TweeError : Error, AsJson {
     let type : TweeErrorType
     let location : TweeLocation?
     let message : String
-    
+
     func asJson() -> Dict {
+        return self.asJson(story: nil)
+    }
+
+    func asJson(story: TweeStory?) -> Dict {
         if let location = location {
+            let passage = story?.passagesByName[location.passage ?? ""]
+            let line = passage?.rawTwee[location.passageLineNumber]
             return ["type": String(describing: type), "passage": location.passage ?? NSNull(), "passageLineNumber": location.passageLineNumber,
-                    "lineNumber": location.lineNumber, "line": location.line ?? NSNull(), "message": message]
+                    "fileLineNumber": location.fileLineNumber, "line": line ?? NSNull(), "message": message]
         } else {
             return ["type": String(describing: type), "message": message]
         }

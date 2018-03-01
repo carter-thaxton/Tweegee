@@ -9,7 +9,7 @@
 import Foundation
 
 enum TweeToken {
-    case Newline
+    case Newline(String)
     case Passage(name: String, tags: [String], position: CGPoint?)
     case Text(String)
     case Link(passage: String, title: String?)
@@ -22,8 +22,8 @@ extension TweeToken : Equatable {
     // Kinda lame that we have to do this
     func isEqual(_ t : TweeToken) -> Bool {
         switch (self, t) {
-        case (.Newline, .Newline):
-            return true
+        case (.Newline(let line), .Newline(let line2)):
+            return line == line2
         case (.Passage(let name, let tags, let position), .Passage(let name2, let tags2, let position2)):
             return name == name2 && tags == tags2 && position == position2
         case (.Text(let text), .Text(let text2)):
@@ -73,12 +73,11 @@ class TweeLexer {
     }
 
     func lex(string: String, filename: String? = nil, block: @escaping (TweeToken, TweeLocation) -> Void) {
-        var location = TweeLocation(filename: filename, passage: nil, line: nil, lineNumber: 1, passageLineNumber: 0)
+        var location = TweeLocation(filename: filename, passage: nil, fileLineNumber: 1, passageLineNumber: 0)
         let lines = string.components(separatedBy: .newlines)  // TODO: consider enumerateLines, which doesn't work on Linux
         for line in lines {
-            location.line = line
             lex(line: line, location: &location, block: block)
-            location.lineNumber += 1
+            location.fileLineNumber += 1
             location.passageLineNumber += 1
         }
     }
@@ -104,7 +103,7 @@ class TweeLexer {
             let text = line.trimmingWhitespace()
             if !text.isEmpty {
                 var accText = ""
-                
+
                 let s = StringScanner(text)
                 while !s.isAtEnd {
                     let str = try? s.scan(upTo: bracketsCharacterSet)
@@ -180,9 +179,9 @@ class TweeLexer {
                     handleToken(.Text(accText), location)
                 }
             }
-            
-            // end of line
-            handleToken(.Newline, location)
         }
+
+        // end of line
+        handleToken(.Newline(line), location)
     }
 }

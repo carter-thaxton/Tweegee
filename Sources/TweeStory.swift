@@ -50,11 +50,11 @@ class TweeStory : AsJson {
         return nil
     }
 
+    // Linux swift can't handle AsJson prototype with optional arguments.  Grr...
     func asJson() -> Dict {
         return asJson(includePassages: true)
     }
 
-    // Linux swift can't handle AsJson prototype with optional arguments.  Grr...
     func asJson(includePassages: Bool) -> Dict {
         var passagesData = DictArr()
         if includePassages {
@@ -62,10 +62,10 @@ class TweeStory : AsJson {
                 passagesData.append(passage.asJson())
             }
         }
-        
+
         var errorsData = DictArr()
         for error in errors {
-            errorsData.append(error.asJson())
+            errorsData.append(error.asJson(story: self))
         }
         
         let statistics = ["passageCount": passageCount, "wordCount": wordCount]

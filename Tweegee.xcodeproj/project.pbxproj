@@ -10,7 +10,7 @@
 		AD3F50F5200E6BB800F1BE3C /* main.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F50F4200E6BB800F1BE3C /* main.swift */; };
 		AD3F5102200E6BFD00F1BE3C /* TweegeeTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */; };
 		AD3F512C200E900400F1BE3C /* Playlist.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512B200E900400F1BE3C /* Playlist.tw2 */; };
-		AD3F512E200E905700F1BE3C /* TestStory.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512D200E905700F1BE3C /* TestStory.tw2 */; };
+		AD3F512E200E905700F1BE3C /* Test.tw2 in Resources */ = {isa = PBXBuildFile; fileRef = AD3F512D200E905700F1BE3C /* Test.tw2 */; };
 		AD3F5132200E9CDF00F1BE3C /* TweeLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5131200E9CDF00F1BE3C /* TweeLexer.swift */; };
 		AD3F5133200E9CDF00F1BE3C /* TweeLexer.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5131200E9CDF00F1BE3C /* TweeLexer.swift */; };
 		AD3F5135200EA8C900F1BE3C /* StringHelpers.swift in Sources */ = {isa = PBXBuildFile; fileRef = AD3F5134200EA8C900F1BE3C /* StringHelpers.swift */; };
@@ -54,7 +54,7 @@
 		AD3F5101200E6BFD00F1BE3C /* TweegeeTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweegeeTests.swift; sourceTree = "<group>"; };
 		AD3F5103200E6BFD00F1BE3C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		AD3F512B200E900400F1BE3C /* Playlist.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Playlist.tw2; sourceTree = "<group>"; };
-		AD3F512D200E905700F1BE3C /* TestStory.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = TestStory.tw2; sourceTree = "<group>"; };
+		AD3F512D200E905700F1BE3C /* Test.tw2 */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text; path = Test.tw2; sourceTree = "<group>"; };
 		AD3F5131200E9CDF00F1BE3C /* TweeLexer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TweeLexer.swift; sourceTree = "<group>"; };
 		AD3F5134200EA8C900F1BE3C /* StringHelpers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringHelpers.swift; sourceTree = "<group>"; };
 		AD3F5137201042AC00F1BE3C /* StringScanner.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StringScanner.swift; sourceTree = "<group>"; };
@@ -139,7 +139,7 @@
 			isa = PBXGroup;
 			children = (
 				AD3F512B200E900400F1BE3C /* Playlist.tw2 */,
-				AD3F512D200E905700F1BE3C /* TestStory.tw2 */,
+				AD3F512D200E905700F1BE3C /* Test.tw2 */,
 			);
 			path = TweeFiles;
 			sourceTree = "<group>";
@@ -224,7 +224,7 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				AD3F512E200E905700F1BE3C /* TestStory.tw2 in Resources */,
+				AD3F512E200E905700F1BE3C /* Test.tw2 in Resources */,
 				AD3F512C200E900400F1BE3C /* Playlist.tw2 in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

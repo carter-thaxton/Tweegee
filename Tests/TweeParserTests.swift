@@ -26,27 +26,33 @@ class TweeParserTests: XCTestCase {
 
     func testBasicParse() {
         let story = parse("""
+
             ::Start
             Some text
             Some more text
             [[Passage2]]
 
+
             ::Passage2
             <<set $test = 5>>
             <<if $test is 5>>Say this<<else>>Don't say this<<endif>>
+
         """)
         
         XCTAssertEqual(story.passageCount, 2)
-        XCTAssertEqual(story.passagesByName["Start"]!.location.lineNumber, 1)
-        XCTAssertEqual(story.passagesByName["Passage2"]!.location.lineNumber, 6)
+        XCTAssertEqual(story.passagesByName["Start"]!.location.fileLineNumber, 2)
+        XCTAssertEqual(story.passagesByName["Passage2"]!.location.fileLineNumber, 8)
         XCTAssertNil(story.passagesByName["Start"]!.location.filename)
         XCTAssertNil(story.passagesByName["Passage2"]!.location.filename)
         XCTAssertNotNil(story.startPassage)
 
         checkCodeForPassage(story, "Start", "TNTNL")
         checkCodeForPassage(story, "Passage2", "SI(T:T)N")
+        
+        XCTAssertEqual(story.startPassage!.rawTwee.count, 4)
+        XCTAssertEqual(story.passagesByName["Passage2"]!.rawTwee.count, 3)
     }
-
+    
     func testNestedStatements() {
         let story = parse("""
             ::Start
@@ -176,7 +182,7 @@ class TweeParserTests: XCTestCase {
             @story_start_name = Fail!
         """, expectedError: .InvalidTwee2Settings, lineNumber: 2)
     }
-
+    
     func testTextOutsidePassage() {
         checkParserFails("""
             Some text
@@ -467,7 +473,7 @@ class TweeParserTests: XCTestCase {
                 XCTAssertEqual(error.type, expectedError!)
             }
             if lineNumber != nil {
-                XCTAssertEqual(error.location?.lineNumber, lineNumber)
+                XCTAssertEqual(error.location?.fileLineNumber, lineNumber)
             }
             return
         } else {

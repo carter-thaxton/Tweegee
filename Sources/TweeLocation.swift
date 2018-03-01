@@ -11,7 +11,6 @@ import Foundation
 struct TweeLocation {
     var filename : String?
     var passage: String?
-    var line : String?
-    var lineNumber : Int
+    var fileLineNumber : Int
     var passageLineNumber : Int
 }
