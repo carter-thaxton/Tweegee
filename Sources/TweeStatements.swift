@@ -146,7 +146,7 @@ class TweeLinkStatement : TweeStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "link", "line": location.passageLineNumber, "name": self.passage, "title": self.title ?? NSNull()]
+        return ["_type": "link", "line": location.passageLineNumber, "passage": self.passage, "title": self.title ?? NSNull()]
     }
 }
 
