@@ -407,7 +407,7 @@ class TweeParser {
         }
 
         let variableAndExpr = expr.split(separator: "=", maxSplits: 1, omittingEmptySubsequences: true).map { $0.trimmingCharacters(in: .whitespaces) }
-        if variableAndExpr.count != 2 {
+        if variableAndExpr.count != 2 || !variableAndExpr[0].starts(with: "$") {
             throw TweeError(type: .InvalidExpression, location: location, message: "Invalid expression for set.  Should be <<set $var = val>>")
         }
         let variable = variableAndExpr[0]
