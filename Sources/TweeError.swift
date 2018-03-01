@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TweeError : Error, AsJson {
+struct TweeError : Error, CustomStringConvertible, AsJson {
     let type : TweeErrorType
     let location : TweeLocation?
     let message : String
@@ -19,12 +19,21 @@ struct TweeError : Error, AsJson {
 
     func asJson(story: TweeStory?) -> Dict {
         if let location = location {
-            let passage = story?.passagesByName[location.passage ?? ""]
-            let line = passage?.rawTwee[location.passageLineNumber]
+            let line = location.getLine(story: story)
             return ["type": String(describing: type), "passage": location.passage ?? NSNull(), "passageLineNumber": location.passageLineNumber,
                     "fileLineNumber": location.fileLineNumber, "line": line ?? NSNull(), "message": message]
         } else {
             return ["type": String(describing: type), "message": message]
+        }
+    }
+
+    var description: String {
+        if location?.passage != nil && location?.passageLineNumber != 0 {
+            return "Error on line \(location!.fileLineNumber) (line \(location!.passageLineNumber) of passage '\(location!.passage!)'): \(message)"
+        } else if location != nil {
+            return "Error on line \(location!.fileLineNumber): \(message)"
+        } else {
+            return "Error: \(message)"
         }
     }
 }

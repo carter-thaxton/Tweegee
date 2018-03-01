@@ -13,4 +13,11 @@ struct TweeLocation {
     var passage: String?
     var fileLineNumber : Int
     var passageLineNumber : Int
+
+    func getLine(story: TweeStory?) -> String? {
+        if let passage = story?.passagesByName[passage ?? ""] {
+            return passage.rawTwee[passageLineNumber]
+        }
+        return nil
+    }
 }
