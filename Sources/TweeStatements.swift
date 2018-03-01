@@ -117,7 +117,7 @@ class TweePassage : TweeStatement, NestableStatement {
 
 class TweeNewlineStatement : TweeStatement {
     override func asJson() -> Dict {
-        return ["_type": "newline"]
+        return ["_type": "newline", "line": location.passageLineNumber]
     }
 }
 
@@ -130,23 +130,34 @@ class TweeTextStatement : TweeStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "text", "text": self.text]
+        return ["_type": "text", "line": location.passageLineNumber, "text": self.text]
     }
 }
 
 class TweeLinkStatement : TweeStatement {
-    // TODO: support link name as expression
-    let name : String
+    // TODO: support links to passage via expression
+    let passage : String
     var title : String?
-    
-    init(location: TweeLocation, name: String, title: String?) {
-        self.name = name
+
+    init(location: TweeLocation, passage: String, title: String?) {
+        self.passage = passage
         self.title = title
         super.init(location: location)
     }
     
     override func asJson() -> Dict {
-        return ["_type": "link", "name": self.name, "title": self.title ?? NSNull()]
+        return ["_type": "link", "line": location.passageLineNumber, "name": self.passage, "title": self.title ?? NSNull()]
+    }
+}
+
+// Treat includes as a type of link statement
+class TweeIncludeStatement : TweeLinkStatement {
+    init(location: TweeLocation, passage: String) {
+        super.init(location: location, passage: passage, title: nil)
+    }
+    
+    override func asJson() -> Dict {
+        return ["_type": "include", "line": location.passageLineNumber, "passage": passage]
     }
 }
 
@@ -158,7 +169,7 @@ class TweeChoiceStatement : TweeStatement {
         for choice in choices {
             links.append(choice.asJson())
         }
-        return ["_type": "choice", "choices": links]
+        return ["_type": "choice", "line": location.passageLineNumber, "choices": links]
     }
 }
 
@@ -173,7 +184,7 @@ class TweeSetStatement : TweeStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "set", "variable": variable, "expression": expression.string]
+        return ["_type": "set", "line": location.passageLineNumber, "variable": variable, "expression": expression.string]
     }
 }
 
@@ -186,20 +197,7 @@ class TweeExpressionStatement : TweeStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "expression", "expression": expression.string]
-    }
-}
-
-class TweeIncludeStatement : TweeStatement {
-    let passageExpr : TweeExpression
-    
-    init(location: TweeLocation, passageExpr: TweeExpression) {
-        self.passageExpr = passageExpr
-        super.init(location: location)
-    }
-    
-    override func asJson() -> Dict {
-        return ["_type": "include", "passageExpr": passageExpr.string]
+        return ["_type": "expression", "line": location.passageLineNumber, "expression": expression.string]
     }
 }
 
@@ -213,7 +211,7 @@ class TweeDelayStatement : TweeStatement, NestableStatement {
     }
     
     override func asJson() -> Dict {
-        return ["_type": "delay", "expression": expression.string, "statements": block.asJson()]
+        return ["_type": "delay", "line": location.passageLineNumber, "expression": expression.string, "statements": block.asJson()]
     }
 
     override func visit(fn: (TweeStatement) -> Void) {
@@ -269,7 +267,7 @@ class TweeIfStatement : TweeStatement, NestableStatement {
         for clause in clauses {
             clauseData.append(["condition": clause.condition?.string ?? NSNull(), "statements": clause.block.asJson()])
         }
-        return ["_type": "if", "clauses": clauseData]
+        return ["_type": "if", "line": location.passageLineNumber, "clauses": clauseData]
     }
 
     override func visit(fn: (TweeStatement) -> Void) {

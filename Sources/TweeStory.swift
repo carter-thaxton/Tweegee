@@ -82,18 +82,13 @@ class TweeStory : AsJson {
 
     func getAllLinks() -> [TweeLinkStatement] {
         var result = [TweeLinkStatement]()
-        
         visit() { (stmt) in
-            if let link = stmt as? TweeLinkStatement {
+            if let link = stmt as? TweeLinkStatement {  // This will also get includes
                 result.append(link)
             } else if let choice = stmt as? TweeChoiceStatement {
                 result.append(contentsOf: choice.choices)
-            } else if let include = stmt as? TweeIncludeStatement {
-                // TODO: if include.passageExpr.isLiteral
-                _ = include
             }
         }
-        
         return result
     }
 }

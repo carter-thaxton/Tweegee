@@ -349,10 +349,15 @@ class TweeParserTests: XCTestCase {
             <<else>>
                 X is small.
             <<endif>>
-        """, ignoreErrors: [.UnreferencedPassage])  // TODO: don't ignore this error, once we can parse expressions.
+        """)
 
         checkCodeForPassage(story, "Start", "TNSUTNSUTN")
         checkCodeForPassage(story, "Included", "TNI(TN:TN)")
+        
+        let includeStmt1 = story.startPassage!.block.statements[3] as! TweeIncludeStatement
+        let includeStmt2 = story.startPassage!.block.statements[7] as! TweeIncludeStatement
+        XCTAssertEqual(includeStmt1.passage, "Included")
+        XCTAssertEqual(includeStmt2.passage, "Included")
     }
     
     func testDelay() {
@@ -421,11 +426,11 @@ class TweeParserTests: XCTestCase {
             XCTAssertEqual(choice.choices.count, 2)
 
             let link1 = choice.choices[0]
-            XCTAssertEqual(link1.name, "choice1")
+            XCTAssertEqual(link1.passage, "choice1")
             XCTAssertNil(link1.title)
 
             let link2 = choice.choices[1]
-            XCTAssertEqual(link2.name, "choice2")
+            XCTAssertEqual(link2.passage, "choice2")
             XCTAssertEqual(link2.title, "Choice 2")
         }
 
@@ -497,12 +502,12 @@ class TweeParserTests: XCTestCase {
                 result += "S"
             case is TweeExpressionStatement:
                 result += "E"
+            case is TweeIncludeStatement:
+                result += "U"
             case is TweeLinkStatement:
                 result += "L"
             case is TweeChoiceStatement:
                 result += "C"
-            case is TweeIncludeStatement:
-                result += "U"
             case let delayStmt as TweeDelayStatement:
                 result += "D("
                 result += codeBlockToPattern(delayStmt.block)

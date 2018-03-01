@@ -90,13 +90,13 @@ class TweeParser {
         // Make sure every link refers to a passage
         let links = story.getAllLinks()
         for link in links {
-            if story.passagesByName[link.name] == nil {
-                story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.name)' but no passage exists with that name"))
+            if story.passagesByName[link.passage] == nil {
+                story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.passage)' but no passage exists with that name"))
             } else {
-                unreferencedPassageNames.remove(link.name)
+                unreferencedPassageNames.remove(link.passage)
             }
         }
-
+        
         // Check for start passage
         if story.startPassage == nil {
             story.errors.append(TweeError(type: .MissingPassage, location: nil, message: "Missing start passage named '\(story.startPassageName)'"))
@@ -214,9 +214,9 @@ class TweeParser {
                     lineHasText = true  // add some text to line
                 }
 
-            case .Link(let name, let title):
+            case .Link(let passage, let title):
                 try ensureCodeBlock()
-                let linkStmt = TweeLinkStatement(location: location, name: name, title: title)
+                let linkStmt = TweeLinkStatement(location: location, passage: passage, title: title)
 
                 // check if link is part of a list of choices
                 let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement
@@ -429,13 +429,13 @@ class TweeParser {
             throw choiceError!
         }
     }
-    
+
     private func parseInclude(expr: String?, location: TweeLocation) throws {
         guard let expr = expr else {
-            throw TweeError(type: .MissingExpression, location: location, message: "No expression given for include")
+            throw TweeError(type: .MissingExpression, location: location, message: "No passage given for include")
         }
-        let passageExpr = try parse(expression: expr, location: location, for: "include")
-        let stmt = TweeIncludeStatement(location: location, passageExpr: passageExpr)
+        let passage = expr.trimmingCharacters(in: "\"")
+        let stmt = TweeIncludeStatement(location: location, passage: passage)
         currentCodeBlock!.add(stmt)
     }
 }

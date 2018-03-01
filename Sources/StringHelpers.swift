@@ -72,4 +72,8 @@ extension String {
     func trimmingTrailingWhitespace() -> String {
         return self.replacingOccurrences(of: "\\s+$", with: "", options: .regularExpression)  // trim trailing whitespace
     }
+    
+    func trimmingCharacters(in string: String) -> String {
+        return self.trimmingCharacters(in: CharacterSet.init(charactersIn: string))
+    }
 }
