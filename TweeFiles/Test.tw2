@@ -2,7 +2,6 @@
 Test Syntax
 
 ::Start
-<<set b = 3>>
 <<set $a = 0>>
 <<include "showA">>
 Next is delay:

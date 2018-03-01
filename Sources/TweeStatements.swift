@@ -136,9 +136,11 @@ class TweeTextStatement : TweeStatement {
 }
 
 class TweeLinkStatement : TweeStatement {
-    // TODO: support links to passage via expression
     let passage : String
     var title : String?
+
+    // TODO: support links to passage via expression.  This will do for now.
+    var isDynamic : Bool { return passage.starts(with: "$") }
 
     init(location: TweeLocation, passage: String, title: String?) {
         self.passage = passage

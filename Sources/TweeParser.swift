@@ -91,10 +91,12 @@ class TweeParser {
         // Make sure every link refers to a passage
         let links = story.getAllLinks()
         for link in links {
-            if story.passagesByName[link.passage] == nil {
-                story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.passage)' but no passage exists with that name"))
-            } else {
-                unreferencedPassageNames.remove(link.passage)
+            if !link.isDynamic {
+                if story.passagesByName[link.passage] == nil {
+                    story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.passage)' but no passage exists with that name"))
+                } else {
+                    unreferencedPassageNames.remove(link.passage)
+                }
             }
         }
         
