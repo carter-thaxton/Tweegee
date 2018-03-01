@@ -1090,11 +1090,12 @@ extension Substring: _String {
     }
 }
 
-extension NSString: _String {
-    var substring: Substring {
-        return Substring(self.bridge())  // CJT: fix for linux.  use bridge() instead of "as String"
-    }
-}
+// CJT: fix for linux
+//extension NSString: _String {
+//    var substring: Substring {
+//        return Substring(self as String)
+//    }
+//}
 
 // Used for array values
 private protocol _Array {
