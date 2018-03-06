@@ -32,7 +32,7 @@
 //
 
 import Foundation
-import Dispatch  // CJT: explicitly needed for linux
+import Dispatch
 
 /// Immutable wrapper for a parsed expression
 /// Reusing the same Expression instance for multiple evaluations is more efficient

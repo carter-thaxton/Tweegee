@@ -525,11 +525,16 @@ public struct AnyExpression: CustomStringConvertible {
 
         // Evaluation isn't thread-safe due to shared values
         // so we use objc_sync_enter/exit to prevent re-entrancy
+        // Beware that these objc mutexes are not available on Linux
         evaluator = {
-//            objc_sync_enter(box)          // CJT: doesn't work on linux
+            #if !os(Linux)
+            objc_sync_enter(box)
+            #endif
             defer {
                 box.values = literals
-//                objc_sync_exit(box)       // CJT: doesn't work on linux
+                #if !os(Linux)
+                objc_sync_exit(box)
+                #endif
             }
             let value = try expression.evaluate()
             return box.load(value)
@@ -1090,12 +1095,16 @@ extension Substring: _String {
     }
 }
 
-// CJT: fix for linux
-//extension NSString: _String {
-//    var substring: Substring {
-//        return Substring(self as String)
-//    }
-//}
+extension NSString: _String {
+    var substring: Substring {
+        #if os(Linux)
+        // directly casting NSString to String is unavailable on Linux, but this bridge() function is avilable
+        return Substring(self.bridge())
+        #else
+        return Substring(self as String)
+        #endif
+    }
+}
 
 // Used for array values
 private protocol _Array {
