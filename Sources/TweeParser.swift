@@ -40,8 +40,11 @@ class TweeParser {
         guard let expression = expression else {
             throw TweeError(type: .MissingExpression, location: location, message: "Missing expression for \(macro)")
         }
-        // TODO: finish this
-        return TweeExpression(from: expression)
+        let result = TweeExpression(expression, location: location)
+        if result.error != nil {
+            throw result.error!
+        }
+        return result
     }
 
     // MARK: Parser Implementation
