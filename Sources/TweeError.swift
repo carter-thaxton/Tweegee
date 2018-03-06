@@ -51,6 +51,7 @@ enum TweeErrorType : Equatable {
     case MissingDelay
     case MissingExpression
     case UnexpectedExpression
+    case InvalidDelay
     case InvalidExpression
     case UnrecognizedMacro
     case InvalidTwee2Settings

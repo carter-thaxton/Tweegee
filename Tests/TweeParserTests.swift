@@ -366,7 +366,19 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(includeStmt2.passage, "Included")
     }
     
-    func testDelay() {
+    func testDelayParsing() {
+        XCTAssertNil(TweeDelay(fromString: "junk"))
+        XCTAssertNil(TweeDelay(fromString: "10"))
+        XCTAssertNil(TweeDelay(fromString: "s"))
+        XCTAssertNil(TweeDelay(fromString: "10ss"))
+        XCTAssertNil(TweeDelay(fromString: " 10s "))  // not even whitespace
+
+        XCTAssertEqual(TweeDelay(fromString: "10s")?.seconds, 10)
+        XCTAssertEqual(TweeDelay(fromString: "3m")?.seconds, 180)
+        XCTAssertEqual(TweeDelay(fromString: "2h")?.seconds, 7200)
+    }
+    
+    func testDelayStatement() {
         let story = parse("""
             ::Start
             Text
@@ -377,7 +389,7 @@ class TweeParserTests: XCTestCase {
 
         checkCodeForPassage(story, "Start", "TND(T)TNTND(T)TN")  // Note that it adds a newline after "Before delay"
         let delayStmt = story.startPassage!.block.statements[2] as! TweeDelayStatement
-        XCTAssertEqual(delayStmt.expression.string, "\"10m\"")
+        XCTAssertEqual(delayStmt.delay.string, "10m")
     }
 
     func testDelayLinks() {
@@ -392,7 +404,7 @@ class TweeParserTests: XCTestCase {
         
         checkCodeForPassage(story, "Start", "TND()L")  // Link with delay results in empty delay, then link
         let delayStmt = story.startPassage!.block.statements[2] as! TweeDelayStatement
-        XCTAssertEqual(delayStmt.expression.string, "\"10m\"")
+        XCTAssertEqual(delayStmt.delay.string, "10m")
         XCTAssertEqual(delayStmt.block.statements.count, 0)
     }
 

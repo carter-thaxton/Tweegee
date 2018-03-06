@@ -252,10 +252,13 @@ class TweeParser {
                     choiceStmt!.choices.append(linkStmt)
                 } else {
                     // if link has a title like "delay 10m", then insert an empty delay before following the link
-                    if let delay = title?.match(pattern: "^delay\\s+(\\w+)$") {
-                        let delayStr = "\"\(delay[1]!)\""  // wrap in quotes, to parse as string
-                        let delayExpr = try parse(expression: delayStr, location: location, for: "delayLink")
-                        let delayStmt = TweeDelayStatement(location: location, expression: delayExpr)
+                    if let delayMatch = title?.match(pattern: "^delay\\s+(\\w+)$") {
+                        let delayStr = delayMatch[1]!
+                        guard let delay = TweeDelay(fromString: delayStr) else {
+                            throw TweeError(type: .InvalidDelay, location: location, message: "Invalid expression for delay: \(delayStr)")
+                        }
+
+                        let delayStmt = TweeDelayStatement(location: location, delay: delay)
                         currentCodeBlock!.add(delayStmt)
 
                         // don't use any title for the link
@@ -387,8 +390,11 @@ class TweeParser {
             guard let expr = expr else {
                 throw TweeError(type: .MissingExpression, location: location, message: "Missing expression for delay")
             }
-            let delayExpr = try parse(expression: expr, location: location, for: "delay")
-            let stmt = TweeDelayStatement(location: location, expression: delayExpr)
+            let delayExpr = expr.trimmingCharacters(in: "\"'")  // trim quotes around delay
+            guard let delay = TweeDelay(fromString: delayExpr) else {
+                throw TweeError(type: .InvalidDelay, location: location, message: "Invalid expression for delay: \(delayExpr)")
+            }
+            let stmt = TweeDelayStatement(location: location, delay: delay)
             endLineOfText(location: location)  // end any text before delay
             currentCodeBlock!.add(stmt)
             currentStatements.append(stmt)

@@ -205,16 +205,16 @@ class TweeExpressionStatement : TweeStatement {
 }
 
 class TweeDelayStatement : TweeStatement, NestableStatement {
-    let expression  : TweeExpression
+    let delay  : TweeDelay
     let block = TweeCodeBlock()
     
-    init(location: TweeLocation, expression: TweeExpression) {
-        self.expression = expression
+    init(location: TweeLocation, delay: TweeDelay) {
+        self.delay = delay
         super.init(location: location)
     }
     
     override func asJson() -> Dict {
-        return ["_type": "delay", "line": location.passageLineNumber, "expression": expression.string, "statements": block.asJson()]
+        return ["_type": "delay", "line": location.passageLineNumber, "delay": delay.string, "seconds": delay.seconds, "statements": block.asJson()]
     }
 
     override func visit(fn: (TweeStatement) -> Void) {
