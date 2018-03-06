@@ -30,7 +30,7 @@ class TweeExpression {
     init(_ string: String, location: TweeLocation? = nil) {
         self.string = TweeExpression.fromTwee(string)
         self.location = location
-        self.parsed = Expression.parse(self.string)
+        self.parsed = Expression.parse(self.string, usingCache: false)
         
         var variables = [String]()
         var syntaxError : String?
