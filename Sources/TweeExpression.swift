@@ -116,8 +116,7 @@ class TweeExpression {
     
     // Implement the 'either' function, which chooses a random value from the given values
     static func either(_ vals: [Any]) -> Any {
-        // WTF swift!
-        return vals[Int(arc4random_uniform(UInt32(vals.endIndex)))]
+        return vals[Random.getRandomNum(vals.endIndex)]
     }
 
     static func fromTwee(_ string: String) -> String {
@@ -133,3 +132,28 @@ class TweeExpression {
             .replacing(pattern: "\\b(ge|gte)\\b", with: ">=")
     }
 }
+
+
+// WTF swift, you don't provide a cross-platform random function!
+// And worse, the Linux version requires initialization, which requires a singleton.
+class Random {
+    static let instance = Random()
+    private init() {
+        #if os(Linux)
+            srandom(UInt32(time(nil)))
+        #endif
+    }
+
+    private func getRandomNum(_ max: Int) -> Int {
+        #if os(Linux)
+            return Int(random() % max)
+        #else
+            return Int(arc4random_uniform(UInt32(max)))
+        #endif
+    }
+    
+    static func getRandomNum(_ max: Int) -> Int {
+        return instance.getRandomNum(max)
+    }
+}
+
