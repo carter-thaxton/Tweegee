@@ -298,6 +298,8 @@ class TweeParserTests: XCTestCase {
     func testNewlinesAndIfs() {
         let story = parse("""
             ::Start
+            <<set $x = false>>
+            <<set $y = true>>
             I see <<if $x>>a bird<<else>>nothing<<endif>>.
             On the horizon, I see <<if $y>>a...
             really...
@@ -313,7 +315,7 @@ class TweeParserTests: XCTestCase {
         // big...
         // elephant!
         // On the horizon, I see just a smudge.
-        checkCodeForPassage(story, "Start", "TI(T:T)TNTI(TNTNTNTN:T)TN")
+        checkCodeForPassage(story, "Start", "SSTI(T:T)TNTI(TNTNTNTN:T)TN")
     }
     
     func testSilently() {
@@ -341,10 +343,10 @@ class TweeParserTests: XCTestCase {
         let story = parse("""
             ::Start
             Text before
-            <<set $a = 2>>
+            <<set $x = 2>>
             <<include "Included">>
             Text between
-            <<set $a = 7>>
+            <<set $x = 7>>
             <<include "Included">>
             Text after
 

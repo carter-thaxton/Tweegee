@@ -20,6 +20,7 @@ class TweeStory : AsJson {
     var author : String?
     
     var errors = [TweeError]()
+    var definedVariables = Set<String>()
 
     var startPassage : TweePassage? {
         // For now, don't support Twee2Settings to specify the start passage.

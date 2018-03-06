@@ -54,6 +54,8 @@ class TweeParser {
         ensureNoOpenStatements()
         parseSpecialPassages()
         checkMissingAndUnreferencedPassages()
+        calculateDefinedVariables()
+        checkUndefinedVariables()
         calculateWordCount()
         return story
     }
@@ -120,9 +122,50 @@ class TweeParser {
         }
     }
     
+    private func calculateDefinedVariables() {
+        // collect all of the variables that are ever set
+        story.definedVariables.removeAll()
+        story.visit() { stmt in
+            if let setStmt = stmt as? TweeSetStatement {
+                story.definedVariables.insert(setStmt.variable)
+            }
+        }
+    }
+    
+    private func checkUndefinedVariables() {
+        // helper function used below
+        func checkVariables(expression: TweeExpression, location: TweeLocation) {
+            for variable in expression.variables {
+                if !story.definedVariables.contains(variable) {
+                    story.errors.append(TweeError(type: .UndefinedVariable, location: location,
+                                                  message: "Variable \(variable) is used but never set"))
+                }
+            }
+        }
+
+        // check every use of a variable
+        story.visit() { (stmt) in
+            switch stmt {
+            case let setStmt as TweeSetStatement:
+                checkVariables(expression: setStmt.expression, location: stmt.location)
+
+            case let exprStmt as TweeExpressionStatement:
+                checkVariables(expression: exprStmt.expression, location: stmt.location)
+
+            case let ifStmt as TweeIfStatement:
+                for clause in ifStmt.clauses where clause.condition != nil {
+                    checkVariables(expression: clause.condition!, location: stmt.location)
+                }
+
+            default:
+                break
+            }
+        }
+    }
+    
     private func calculateWordCount() {
         var wordCount = 0
-        story.visit() { (stmt) in
+        story.visit() { stmt in
             if let textStmt = stmt as? TweeTextStatement {
                 let words = textStmt.text.split(separator: " ", omittingEmptySubsequences: true)
                 wordCount += words.count
