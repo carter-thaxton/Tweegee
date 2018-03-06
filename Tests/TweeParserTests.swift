@@ -505,6 +505,19 @@ class TweeParserTests: XCTestCase {
         """, expectedError: .InvalidChoiceSyntax, lineNumber: 3)
     }
     
+    func testExpressionStatements() {
+        let story = parse("""
+            ::Start
+            <<set $x = 5>>
+            <<set $y = 'foo'>>
+            <<set $z = true>>
+            Some text with <<$x>> or <<= $y>> or <<- $z>> or <<print $x>>
+            // TODO: this doesn't work:  <<=$x>> or <<-$x>>
+        """)
+
+        checkCodeForPassage(story, "Start", "SSSTETETETEN")
+    }
+    
     // MARK: Helper methods
 
     func parse(_ string : String, allowErrors: Bool = false, ignoreErrors: [TweeErrorType] = []) -> TweeStory {

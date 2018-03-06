@@ -273,8 +273,8 @@ class TweeParser {
 
             case .Macro(let name, let expr):
                 try ensureCodeBlock()
-                if name == nil {
-                    // raw expression used in macro
+                if name == nil || name == "-" || name == "=" || name == "print" {
+                    // raw expression used in macro (or one of the various print macros)
                     let expression = try parse(expression: expr, location: location, for: "exprStmt")
                     let exprStmt = TweeExpressionStatement(location: location, expression: expression)
                     currentCodeBlock!.add(exprStmt)
