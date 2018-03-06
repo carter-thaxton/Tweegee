@@ -136,20 +136,32 @@ class TweeTextStatement : TweeStatement {
 }
 
 class TweeLinkStatement : TweeStatement {
-    let passage : String
+    let passage : String?
+    let expression : TweeExpression?
     var title : String?
 
-    // TODO: support links to passage via expression.  This will do for now.
-    var isDynamic : Bool { return passage.starts(with: "$") }
+    var isDynamic : Bool { return expression != nil }
 
     init(location: TweeLocation, passage: String, title: String?) {
         self.passage = passage
+        self.expression = nil
+        self.title = title
+        super.init(location: location)
+    }
+    
+    init(location: TweeLocation, expression: TweeExpression, title: String? = nil) {
+        self.passage = nil
+        self.expression = expression
         self.title = title
         super.init(location: location)
     }
     
     override func asJson() -> Dict {
-        return ["_type": "link", "line": location.passageLineNumber, "passage": passage, "title": title ?? NSNull()]
+        if isDynamic {
+            return ["_type": "link", "line": location.passageLineNumber, "expression": expression!.string, "title": title ?? NSNull()]
+        } else {
+            return ["_type": "link", "line": location.passageLineNumber, "passage": passage!, "title": title ?? NSNull()]
+        }
     }
 }
 
@@ -159,8 +171,16 @@ class TweeIncludeStatement : TweeLinkStatement {
         super.init(location: location, passage: passage, title: nil)
     }
     
+    init(location: TweeLocation, expression: TweeExpression) {
+        super.init(location: location, expression: expression, title: nil)
+    }
+
     override func asJson() -> Dict {
-        return ["_type": "include", "line": location.passageLineNumber, "passage": passage]
+        if isDynamic {
+            return ["_type": "include", "line": location.passageLineNumber, "expression": expression!.string]
+        } else {
+            return ["_type": "include", "line": location.passageLineNumber, "passage": passage!]
+        }
     }
 }
 

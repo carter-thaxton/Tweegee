@@ -368,6 +368,43 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(includeStmt2.passage, "Included")
     }
     
+    func testDynamicLinks() {
+        let story = parse("""
+            ::Start
+            Text before
+            <<set $next = "Passage1">>
+            <<include $next>>
+            <<set $next = "Passage2">>
+            [[$next]]
+
+            ::Passage1 [noreferror]
+            Included
+
+            ::Passage2 [noreferror]
+            Linked
+        """)
+        
+        checkCodeForPassage(story, "Start", "TNSUSL")
+        checkCodeForPassage(story, "Passage1", "TN")
+        checkCodeForPassage(story, "Passage2", "TN")
+
+        let includeStmt = story.startPassage!.block.statements[3] as! TweeIncludeStatement
+        let linkStmt = story.startPassage!.block.statements[5] as! TweeLinkStatement
+        XCTAssertTrue(includeStmt.isDynamic)
+        XCTAssertEqual(includeStmt.expression!.string, "$next")
+        XCTAssert(includeStmt.expression!.variables.contains("$next"))
+        XCTAssertTrue(linkStmt.isDynamic)
+        XCTAssertEqual(linkStmt.expression!.string, "$next")
+        XCTAssert(linkStmt.expression!.variables.contains("$next"))
+    }
+    
+    func testUndefinedVariableInLink() {
+        checkParserFails("""
+            ::Start
+            [[$shoulderror]]
+        """, expectedError: .UndefinedVariable, lineNumber: 2)
+    }
+    
     func testDelayParsing() {
         XCTAssertNil(TweeDelay(fromString: "junk"))
         XCTAssertNil(TweeDelay(fromString: "10"))

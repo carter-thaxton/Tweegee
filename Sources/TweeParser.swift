@@ -53,10 +53,10 @@ class TweeParser {
         trimTrailingEmptyLinesOfRawTwee()
         ensureNoOpenStatements()
         parseSpecialPassages()
-        checkMissingAndUnreferencedPassages()
+        calculateWordCount()
         calculateDefinedVariables()
         checkUndefinedVariables()
-        calculateWordCount()
+        checkMissingAndUnreferencedPassages()
         return story
     }
 
@@ -97,10 +97,10 @@ class TweeParser {
         let links = story.getAllLinks()
         for link in links {
             if !link.isDynamic {
-                if story.passagesByName[link.passage] == nil {
-                    story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.passage)' but no passage exists with that name"))
+                if story.passagesByName[link.passage!] == nil {
+                    story.errors.append(TweeError(type: .MissingPassage, location: link.location, message: "Link refers to passage named '\(link.passage!)' but no passage exists with that name"))
                 } else {
-                    unreferencedPassageNames.remove(link.passage)
+                    unreferencedPassageNames.remove(link.passage!)
                 }
             }
         }
@@ -156,6 +156,9 @@ class TweeParser {
                 for clause in ifStmt.clauses where clause.condition != nil {
                     checkVariables(expression: clause.condition!, location: stmt.location)
                 }
+
+            case let linkStmt as TweeLinkStatement where linkStmt.isDynamic:  // handles both link and include
+                checkVariables(expression: linkStmt.expression!, location: stmt.location)
 
             default:
                 break
@@ -262,55 +265,11 @@ class TweeParser {
 
             case .Text(let text):
                 try ensureCodeBlock()
+                try parseText(text: text, location: location)
                 
-                // Special case for | separating links
-                if text.trimmingWhitespace() == "|" {
-                    if let link = currentCodeBlock?.last as? TweeLinkStatement {
-                        // convert previous link to list of choices
-                        currentCodeBlock!.pop()
-                        let stmt = TweeChoiceStatement(location: link.location)
-                        stmt.choices.append(link)
-                        currentCodeBlock!.add(stmt)
-                    } else if let choices = currentCodeBlock?.last as? TweeChoiceStatement {
-                        // already a list of choices, simply ignore the |
-                        _ = choices
-                    }
-                } else if !silently {
-                    let stmt = TweeTextStatement(location: location, text: text)
-                    currentCodeBlock!.add(stmt)
-                    lineHasText = true  // add some text to line
-                }
-
             case .Link(let passage, let title):
                 try ensureCodeBlock()
-                let linkStmt = TweeLinkStatement(location: location, passage: passage, title: title)
-
-                // check if link is part of a list of choices
-                let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement
-
-                // end any text before following a link or choice
-                endLineOfText(location: location)
-
-                if choiceStmt != nil {
-                    choiceStmt!.choices.append(linkStmt)
-                } else {
-                    // if link has a title like "delay 10m", then insert an empty delay before following the link
-                    if let delayMatch = title?.match(pattern: "^delay\\s+(\\w+)$") {
-                        let delayStr = delayMatch[1]!
-                        guard let delay = TweeDelay(fromString: delayStr) else {
-                            throw TweeError(type: .InvalidDelay, location: location, message: "Invalid expression for delay: \(delayStr)")
-                        }
-
-                        let delayStmt = TweeDelayStatement(location: location, delay: delay)
-                        currentCodeBlock!.add(delayStmt)
-
-                        // don't use any title for the link
-                        linkStmt.title = nil
-                    }
-                    
-                    // add the link
-                    currentCodeBlock!.add(linkStmt)
-                }
+                try parseLink(passage: passage, title: title, location: location)
 
             case .Macro(let name, let expr):
                 try ensureCodeBlock()
@@ -329,7 +288,6 @@ class TweeParser {
 
                     case "set":
                         try parseSet(expr: expr, location: location)
-                        break
 
                     case "choice":
                         try parseChoice(expr: expr, location: location)
@@ -372,6 +330,64 @@ class TweeParser {
             currentCodeBlock!.add(TweeNewlineStatement(location: location))
         }
         lineHasText = false  // start new line
+    }
+    
+    private func parseText(text: String, location: TweeLocation) throws {
+        // Special case for | separating links
+        if text.trimmingWhitespace() == "|" {
+            if let link = currentCodeBlock?.last as? TweeLinkStatement {
+                // convert previous link to list of choices
+                currentCodeBlock!.pop()
+                let stmt = TweeChoiceStatement(location: link.location)
+                stmt.choices.append(link)
+                currentCodeBlock!.add(stmt)
+            } else if let choices = currentCodeBlock?.last as? TweeChoiceStatement {
+                // already a list of choices, simply ignore the |
+                _ = choices
+            }
+        } else if !silently {
+            let stmt = TweeTextStatement(location: location, text: text)
+            currentCodeBlock!.add(stmt)
+            lineHasText = true  // add some text to line
+        }
+    }
+    
+    private func parseLink(passage: String, title: String?, location: TweeLocation) throws {
+        let linkStmt : TweeLinkStatement
+        if passage.starts(with: "$") {
+            // link uses a dynamic expression
+            let expression = try parse(expression: passage, location: location, for: "link")
+            linkStmt = TweeLinkStatement(location: location, expression: expression, title: title)
+        } else {
+            linkStmt = TweeLinkStatement(location: location, passage: passage, title: title)
+        }
+        
+        // check if link is part of a list of choices
+        let choiceStmt = currentCodeBlock!.last as? TweeChoiceStatement
+        
+        // end any text before following a link or choice
+        endLineOfText(location: location)
+        
+        if choiceStmt != nil {
+            choiceStmt!.choices.append(linkStmt)
+        } else {
+            // if link has a title like "delay 10m", then insert an empty delay before following the link
+            if let delayMatch = title?.match(pattern: "^delay\\s+(\\w+)$") {
+                let delayStr = delayMatch[1]!
+                guard let delay = TweeDelay(fromString: delayStr) else {
+                    throw TweeError(type: .InvalidDelay, location: location, message: "Invalid expression for delay: \(delayStr)")
+                }
+                
+                let delayStmt = TweeDelayStatement(location: location, delay: delay)
+                currentCodeBlock!.add(delayStmt)
+                
+                // don't use any title for the link
+                linkStmt.title = nil
+            }
+            
+            // add the link
+            currentCodeBlock!.add(linkStmt)
+        }
     }
     
     private func parseIf(name: String, expr: String?, location: TweeLocation) throws {
@@ -507,8 +523,14 @@ class TweeParser {
         guard let expr = expr else {
             throw TweeError(type: .MissingExpression, location: location, message: "No passage given for include")
         }
-        let passage = expr.trimmingCharacters(in: "\"")
-        let stmt = TweeIncludeStatement(location: location, passage: passage)
+        let stmt : TweeIncludeStatement
+        if expr.starts(with: "$") {  // Good enough.  Could support more elaborate syntax if necessary
+            let expression = try parse(expression: expr, location: location, for: "include")
+            stmt = TweeIncludeStatement(location: location, expression: expression)
+        } else {
+            let passage = expr.trimmingCharacters(in: "\"'")
+            stmt = TweeIncludeStatement(location: location, passage: passage)
+        }
         currentCodeBlock!.add(stmt)
     }
 }
