@@ -1095,16 +1095,13 @@ extension Substring: _String {
     }
 }
 
+#if !os(Linux)
 extension NSString: _String {
     var substring: Substring {
-        #if os(Linux)
-        // directly casting NSString to String is unavailable on Linux, but this bridge() function is avilable
-        return Substring(self.bridge())
-        #else
         return Substring(self as String)
-        #endif
     }
 }
+#endif
 
 // Used for array values
 private protocol _Array {
