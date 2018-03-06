@@ -15,6 +15,7 @@ class TweeLexerTests: XCTestCase {
             :: Start [tag tag2] <5,25>
             Some normal text
             Brackets, like I <3 U, and/or [this] thing
+            <i>Track 1 -- "Ladies And Gentlemen We Are Floating In Space" by Spiritualized</i>
             Text [[link]] text
             <<set $i = 5>>
             <<if $i > 0 >>I have <<$i>> items and costs <<3 * $i>> dollars<<else>>No items<<endif>>
@@ -28,6 +29,8 @@ class TweeLexerTests: XCTestCase {
             .Newline("Some normal text"),
             .Text("Brackets, like I <3 U, and/or [this] thing"),
             .Newline("Brackets, like I <3 U, and/or [this] thing"),
+            .Text("<i>Track 1 -- \"Ladies And Gentlemen We Are Floating In Space\" by Spiritualized</i>"),
+            .Newline("<i>Track 1 -- \"Ladies And Gentlemen We Are Floating In Space\" by Spiritualized</i>"),
             .Text("Text "),
             .Link(passage: "link", title: nil),
             .Text(" text"),
@@ -143,7 +146,7 @@ class TweeLexerTests: XCTestCase {
         let lexer = TweeLexer()
         lexer.lex(string: string) { tok, _ in result.append(tok) }
         XCTAssertEqual(result.count, tokens.count)
-        for i in 0..<result.count {
+        for i in 0..<min(result.count, tokens.count) {
             let actual = result[i]
             let expected = tokens[i]
             XCTAssertEqual(actual, expected)

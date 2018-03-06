@@ -66,6 +66,13 @@ private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
 
 class TweeLexer {
     let macroNameCharacters = CharacterSet.letters.union(CharacterSet(charactersIn: "/="))
+    
+    enum LexerState : Equatable {
+        case text
+        case link
+        case macro
+        case comment
+    }
 
     func lex(filename: String, block: @escaping (TweeToken, TweeLocation) -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
@@ -103,85 +110,122 @@ class TweeLexer {
             let text = line.trimmingWhitespace()
             if !text.isEmpty {
                 var accText = ""
+                var state = LexerState.text
 
-                let s = StringScanner(text)
-                while !s.isAtEnd {
-                    let str = try? s.scan(upTo: bracketsCharacterSet)
-                    if str != nil && str! != nil {
-                        accText += str!!
-                    }
-                    if !s.isAtEnd {
-                        if s.match("[[") {  // link, e.g [[Choice|choice_1]]
+                // Look for <<, [[, or // to start a token, and >>, ]] to end a token.
+                // Since these are all two-character strings, go ahead and always get the next two chars.
+                var i = text.startIndex
+                var skipChar = false
+                while i < text.endIndex {
+                    let ci = text[i]
+                    let j = text.index(after: i)
+                    if j < text.endIndex {
+                        let cj = text[j]
+                        
+                        switch (state, ci, cj) {
+
+                        case (.text, "[", "["):
+                            // start link, match until ]]
                             if !accText.isEmpty {
                                 handleToken(.Text(accText), location)
-                                accText = ""
                             }
-                            let link = try? s.scan(upTo: "]]")
-                            if link != nil && link! != nil {
-                                // split on pipe, and trim each component
-                                let passageAndTitle = link!!.components(separatedBy: "|").map { $0.trimmingWhitespace() }
-                                if passageAndTitle.count == 2 {
-                                    handleToken(.Link(passage: passageAndTitle[1], title: passageAndTitle[0]), location)
-                                } else if passageAndTitle.count == 1 {
-                                    handleToken(.Link(passage: passageAndTitle[0], title: nil), location)
-                                } else {
-                                    return handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Too many | symbols"), location)
-                                }
-                                s.match("]]")
+                            accText = ""
+                            skipChar = true
+                            state = .link
+
+                        case (.link, "]", "]"):
+                            // end link
+                            // split on pipe, and trim each component
+                            let passageAndTitle = accText.components(separatedBy: "|").map { $0.trimmingWhitespace() }
+                            if passageAndTitle.count == 2 {
+                                handleToken(.Link(passage: passageAndTitle[1], title: passageAndTitle[0]), location)
+                            } else if passageAndTitle.count == 1 {
+                                handleToken(.Link(passage: passageAndTitle[0], title: nil), location)
                             } else {
-                                return handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Missing ]]"), location)
+                                return handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Too many | symbols"), location)
                             }
-                        } else if s.match("<<") {  // macro, e.g. <<set $i = 5>>
+                            accText = ""
+                            skipChar = true
+                            state = .text
+
+                        case (.text, "<", "<"):
+                            // start macro, match until >>
                             if !accText.isEmpty {
                                 handleToken(.Text(accText), location)
-                                accText = ""
                             }
-                            let macro = try? s.scan(upTo: ">>")
-                            if macro != nil && macro! != nil {
-                                let text = macro!!.trimmingWhitespace()
-                                if text.isEmpty {
-                                    return handleToken(.Error(type: .InvalidMacroSyntax, message: "Found empty macro"), location)
-                                } else if macroNameCharacters.contains(text.unicodeScalars.first!) {
-                                    // starts with a macro, split on whitespace, giving name and rest of expression
-                                    let nameAndExpr = text.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
-                                    if nameAndExpr.count >= 2 {
-                                        handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
-                                    } else {
-                                        handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
-                                    }
+                            accText = ""
+                            skipChar = true
+                            state = .macro
+
+                        case (.macro, ">", ">"):
+                            // end macro
+                            let macro = accText.trimmingWhitespace()
+                            if macro.isEmpty {
+                                return handleToken(.Error(type: .InvalidMacroSyntax, message: "Found empty macro"), location)
+                            } else if macroNameCharacters.contains(macro.unicodeScalars.first!) {
+                                // starts with a macro, split on whitespace, giving name and rest of expression
+                                let nameAndExpr = macro.split(separator: " ", maxSplits: 1, omittingEmptySubsequences: true)
+                                if nameAndExpr.count >= 2 {
+                                    handleToken(.Macro(name: String(nameAndExpr[0]), expr: String(nameAndExpr[1])), location)
                                 } else {
-                                    // doesn't start with a macro name, so it's a raw expression
-                                    handleToken(.Macro(name: nil, expr: text), location)
+                                    handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
                                 }
-                                s.match(">>")
                             } else {
-                                return handleToken(.Error(type: .InvalidMacroSyntax, message: "Invalid macro syntax.  Missing >>"), location)
+                                // doesn't start with a macro name, so it's a raw expression
+                                handleToken(.Macro(name: nil, expr: macro), location)
                             }
-                        } else if s.match("//") {  // comment, e.g. // here's a comment
+                            accText = ""
+                            skipChar = true
+                            state = .text
+                            
+                        case (.text, "/", "/"):
+                            // start comment, match until end of line
+                            // trim any whitespace before comment begins
                             accText = accText.trimmingTrailingWhitespace()
                             if !accText.isEmpty {
                                 handleToken(.Text(accText), location)
-                                accText = ""
                             }
-                            s.match("//")
-                            let comment = s.remainder.trimmingWhitespace()
-                            handleToken(.Comment(comment), location)
-                            s.peekAtEnd()
-                        } else {
-                            try! s.back()
-                            accText += String(try! s.scanChar())
+                            accText = ""
+                            skipChar = true
+                            state = .comment
+
+                        default:
+                            // no match, accumulate and move on
+                            accText.append(ci)
                         }
+                    } else {
+                        // last char of line
+                        accText.append(ci)
+                    }
+                    // advance index
+                    i = j
+                    if skipChar {
+                        i = text.index(after: i)
+                        skipChar = false
                     }
                 }
-                
-                accText = accText.trimmingTrailingWhitespace()
-                if !accText.isEmpty {
-                    handleToken(.Text(accText), location)
+
+                // reached end of line, check state
+                switch state {
+                case .text:
+                    if !accText.isEmpty {
+                        handleToken(.Text(accText), location)
+                    }
+
+                case .comment:
+                    handleToken(.Comment(accText.trimmingWhitespace()), location)
+
+                case .link:
+                    handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Missing ]]"), location)
+                    
+                case .macro:
+                    return handleToken(.Error(type: .InvalidMacroSyntax, message: "Invalid macro syntax.  Missing >>"), location)
                 }
             }
         }
 
-        // end of line
+        // always include a newline token with entire line
         handleToken(.Newline(line), location)
     }
+
 }
