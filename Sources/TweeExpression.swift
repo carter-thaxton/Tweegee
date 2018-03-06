@@ -25,7 +25,7 @@ class TweeExpression {
     let parsed : ParsedExpression
     
     let error : TweeError?
-    let variables : [String]
+    let variables : Set<String>
 
     init(_ string: String, location: TweeLocation? = nil) {
         self.string = TweeExpression.fromTwee(string)
@@ -35,6 +35,8 @@ class TweeExpression {
         var variables = [String]()
         var syntaxError : String?
 
+        // Examine the parsed expression, and look for any errors
+        // Also collect variable references by name
         if parsed.error != nil {
             syntaxError = parsed.error!.description
         } else {
@@ -70,7 +72,6 @@ class TweeExpression {
 
                 default:
                     // for now allow everything else
-                    // syntaxError = "Invalid symbol in expression: \(symbol)"
                     break
                 }
             }
@@ -80,7 +81,7 @@ class TweeExpression {
         } else {
             self.error = nil
         }
-        self.variables = variables
+        self.variables = Set(variables)
     }
     
     func eval<T>(variables: [String:Any] = [:]) throws -> T {
@@ -88,7 +89,7 @@ class TweeExpression {
         let expr = AnyExpression(parsed, impureSymbols: { symbol in
             switch symbol {
             case .variable("null"):
-                return { _ in NSNull() }  // have to implement this explicitly
+                return { _ in NSNull() }  // AnyExpression doesn't handle this, so we have to implement it explicitly
             case .variable(let name):
                 if name.first == "$" {
                     if let value = variables[name] {
@@ -96,9 +97,9 @@ class TweeExpression {
                     }
                 }
             case .function("visited", 0):
-                return { _ in false }
+                return { _ in TweeExpression.visited() }
             case .function("visited", 1):
-                return { _ in false }
+                return { args in TweeExpression.visited(args[0] as? String) }
             case .function("either", .any):
                 return { args in TweeExpression.either(args) }
             default:
@@ -117,6 +118,11 @@ class TweeExpression {
     // Implement the 'either' function, which chooses a random value from the given values
     static func either(_ vals: [Any]) -> Any {
         return vals[Random.getRandomNum(vals.endIndex)]
+    }
+
+    // For now, implement visited by simply returning false.  Need to handle game history.
+    static func visited(_ passage: String? = nil) -> Bool {
+        return false
     }
 
     static func fromTwee(_ string: String) -> String {
