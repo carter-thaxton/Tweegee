@@ -11,7 +11,7 @@ import Foundation
 enum TweeAction : Equatable {
     case Message(text: String)
     case Choice(choices: [TweeChoice])
-    case Delay(text: String?, delay: TweeDelay)
+    case Delay(text: String, delay: TweeDelay)
     case End
 }
 
