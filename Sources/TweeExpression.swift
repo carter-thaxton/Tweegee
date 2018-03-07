@@ -19,13 +19,15 @@ import Foundation
 //    >     gt
 //    >=    ge, gte
 
-class TweeExpression {
+class TweeExpression : CustomStringConvertible {
     let string : String
     let location : TweeLocation?
     let parsed : ParsedExpression
     
     let error : TweeError?
     let variables : Set<String>
+    
+    var description: String { return string }
 
     init(_ string: String, location: TweeLocation? = nil) {
         self.string = TweeExpression.fromTwee(string)

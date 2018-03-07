@@ -46,6 +46,7 @@ func ==(lhs: TweeError, rhs: TweeError) -> Bool {
 
 
 enum TweeErrorType : Equatable {
+    case UnknownError
     case InvalidLinkSyntax
     case InvalidMacroSyntax
     case InvalidChoiceSyntax
