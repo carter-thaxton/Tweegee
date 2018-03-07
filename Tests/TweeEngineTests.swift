@@ -30,7 +30,7 @@ class TweeEngineTests: XCTestCase {
             <<endif>>
         """)
 
-        XCTAssertEqual(result, [
+        checkActions(result, [
             .Message(text: "X = 1"),
             .Message(text: "That's small"),
             .Message(text: "X = 2"),
@@ -57,12 +57,34 @@ class TweeEngineTests: XCTestCase {
             X = <<$x>>
         """)
         
-        XCTAssertEqual(result, [
+        checkActions(result, [
             .Message(text: "X = 1"),
             .Message(text: "X = 2"),
             .Message(text: "Done"),
             .End
-            ])
+        ])
+    }
+    
+    func testDelay() {
+        let result = interpret("""
+            ::Start
+            <<delay 20m>>Twenty minutes<<enddelay>>
+            <<delay "1h">>One hour<</delay>>
+            <<delay 5s>><<enddelay>>  // no text
+            [[delay 10s|Next]]
+
+            ::Next
+            After 10 seconds
+        """)
+        
+        checkActions(result, [
+            .Delay(text: "Twenty minutes", delay: TweeDelay(fromString: "20m")!),
+            .Delay(text: "One hour", delay: TweeDelay(fromString: "1h")!),
+            .Delay(text: "[Waiting]", delay: TweeDelay(fromString: "5s")!),
+            .Delay(text: "[Waiting]", delay: TweeDelay(fromString: "10s")!),
+            .Message(text: "After 10 seconds"),
+            .End
+        ])
     }
     
     // MARK: Helper methods
@@ -113,6 +135,15 @@ class TweeEngineTests: XCTestCase {
         XCTAssert(result.count < maxActions, "Reached \(result.count) actions without finishing story")
         
         return result
+    }
+    
+    func checkActions(_ actual: [TweeAction], _ expected: [TweeAction]) {
+        for i in 0..<min(actual.count, expected.count) {
+            let a = actual[i]
+            let e = expected[i]
+            XCTAssertEqual(a, e)
+        }
+        XCTAssertEqual(actual.count, expected.count)
     }
 
 }

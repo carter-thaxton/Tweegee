@@ -19,6 +19,7 @@ class TweeEngine {
     
     // MARK: Properties
     let story : TweeStory
+    let defaultDelayText : String
 
     var currentPassage : TweePassage? = nil
     var currentBlock : TweeCodeBlock? = nil
@@ -38,8 +39,9 @@ class TweeEngine {
 
     // MARK: Public Interface
 
-    init(story: TweeStory) {
+    init(story: TweeStory, defaultDelayText: String = "[Waiting]") {
         self.story = story
+        self.defaultDelayText = defaultDelayText
         resetStory()
     }
     
@@ -85,6 +87,7 @@ class TweeEngine {
     // MARK: Private Implementation
     
     private func gotoPassage(_ passage: TweePassage) {
+        // TODO: check to make sure currentLine is already empty
         currentPassage = passage
         currentBlock = passage.block
         currentStatementIndex = 0
@@ -148,6 +151,16 @@ class TweeEngine {
         case let exprStmt as TweeExpressionStatement:
             let value = try eval(exprStmt.expression) as String
             currentLine += value
+            
+        case let delayStmt as TweeDelayStatement:
+            // TODO: check to make sure currentLine is already empty
+            currentLine = ""
+            pushBlock(delayStmt.block) {
+                var text = self.currentLine.trimmingWhitespace()
+                if text.isEmpty { text = self.defaultDelayText }
+                self.currentLine = ""
+                return TweeAction.Delay(text: text, delay: delayStmt.delay)
+            }
             
         case let includeStmt as TweeIncludeStatement:
             let passageName = includeStmt.isDynamic ? try eval(includeStmt.expression!) as String : includeStmt.passage!
