@@ -25,8 +25,8 @@ class TweeEngine {
     var currentBlock : TweeCodeBlock? = nil
     var currentStatementIndex : Int = -1
     var currentLine : String = ""
-    var awaitingChoice : Bool = false
-    
+    var currentChoices = [TweeChoice]()
+
     var nestedBlocks = [NestedBlock]()
     var isNested : Bool { return !nestedBlocks.isEmpty }
 
@@ -52,7 +52,7 @@ class TweeEngine {
         currentBlock = nil
         currentStatementIndex = -1
         currentLine = ""
-        awaitingChoice = false
+        currentChoices = []
         variables = [:]
         nestedBlocks = []
 
@@ -62,7 +62,7 @@ class TweeEngine {
     }
 
     func getNextAction() throws -> TweeAction {
-        if awaitingChoice {
+        if !currentChoices.isEmpty {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Awaiting a choice, use makeChoice to select an option")
         }
         let maxStatementsPerAction = 100  // prevent runaway interpreter
@@ -85,16 +85,20 @@ class TweeEngine {
         }
     }
 
-    func makeChoice(_ choice: TweeChoice) throws {
-        if !awaitingChoice {
+    func makeChoice(name: String) throws {
+        if currentChoices.isEmpty {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Cannot make choice unless waiting for a choice")
         }
-        if let passage = story.passagesByName[choice.name] {
-            awaitingChoice = false
+        let availableChoiceNames = currentChoices.map {$0.name}
+        if !availableChoiceNames.contains(name) {
+            throw TweeError(type: .RuntimeError, location: currentStatement?.location,
+                            message: "Invalid choice: \(name).  Available choices are: \(availableChoiceNames)")
+        }
+        if let passage = story.passagesByName[name] {
+            currentChoices = []
             gotoPassage(passage)
         } else {
-            throw TweeError(type: .MissingPassage, location: currentStatement?.location,
-                        message: "Choice refers to passage named '\(choice.name)' but no passage exists with that name")
+            fatalError("Choice made available for passage named: \(name) but no passage exists with that name")
         }
     }
 
@@ -196,11 +200,15 @@ class TweeEngine {
         case let choiceStmt as TweeChoiceStatement:
             let choices : [TweeChoice] = try choiceStmt.choices.map() { choice in
                 let passageName = choice.isDynamic ? try eval(choice.expression!) as String : choice.passage!
+                guard story.passagesByName[passageName] != nil else {
+                    throw TweeError(type: .MissingPassage, location: stmt.location,
+                                message: "Choice refers to passage named '\(passageName)' but no passage exists with that name")
+                }
                 return TweeChoice(name: passageName, title: choice.title ?? passageName)
             }
-            awaitingChoice = true
+            currentChoices = choices
             return TweeAction.Choice(choices: choices)
-            
+
         case let ifStmt as TweeIfStatement:
             // pick first clause that has either no condition (else) or evaluates to true
             let clause = try ifStmt.clauses.first { c in

@@ -157,12 +157,8 @@ class TweeEngineTests: XCTestCase {
                 if case .Choice(choices: let choices) = action {
                     XCTAssert(chooseIndex < choose.count, "Reached an unexpected choice: \(choices)")
                     let name = choose[chooseIndex]
-                    if let choice = choices.first(where: { $0.name == name }) {
-                        try engine.makeChoice(choice)
-                        chooseIndex += 1
-                    } else {
-                        XCTFail("Did not find choice named '\(name)' in the available choices: \(choices)")
-                    }
+                    try engine.makeChoice(name: name)
+                    chooseIndex += 1
                 }
 
                 if case .End = action { break }
