@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TweeLocation {
+struct TweeLocation : Equatable {
     var filename : String?
     var passage: String?
     var fileLineNumber : Int
@@ -20,4 +20,11 @@ struct TweeLocation {
         }
         return nil
     }
+}
+
+func ==(lhs: TweeLocation, rhs: TweeLocation) -> Bool {
+    return lhs.filename == rhs.filename &&
+        lhs.passage == rhs.passage &&
+        lhs.fileLineNumber == rhs.fileLineNumber &&
+        lhs.passageLineNumber == rhs.passageLineNumber
 }

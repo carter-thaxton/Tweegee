@@ -1,5 +1,5 @@
 //
-//  ExpressionTests.swift
+//  TweeExpressionTests.swift
 //  TweegeeTests
 //
 //  Created by Carter Thaxton on 2/28/18.
@@ -8,7 +8,7 @@
 
 import XCTest
 
-class ExpressionTests: XCTestCase {
+class TweeExpressionTests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
     }

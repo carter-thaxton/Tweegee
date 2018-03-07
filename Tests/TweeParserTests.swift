@@ -8,17 +8,6 @@
 
 import XCTest
 
-// Helper functions to aid testing
-extension TweeStory {
-    var firstPassage : TweePassage {
-        return passagesInOrder[0]
-    }
-    
-    var secondPassage : TweePassage {
-        return passagesInOrder[1]
-    }
-}
-
 class TweeParserTests: XCTestCase {
     override func setUp() {
         continueAfterFailure = false
@@ -113,7 +102,7 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(story.passageCount, 3)
         XCTAssertNotNil(story.startPassage)
         XCTAssertEqual(story.startPassage!.name, "Start")
-        XCTAssert(story.firstPassage === story.startPassage)
+        XCTAssert(story.passagesInOrder[0] === story.startPassage)
 
         checkCodeForPassage(story, "Start", "C")
         checkCodeForPassage(story, "Passage1", "TN")

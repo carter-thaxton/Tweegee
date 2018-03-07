@@ -8,7 +8,7 @@
 
 import Foundation
 
-enum TweeToken {
+enum TweeToken : Equatable {
     case Newline(String)
     case Passage(name: String, tags: [String], position: CGPoint?)
     case Text(String)
@@ -18,34 +18,31 @@ enum TweeToken {
     case Error(type: TweeErrorType, message: String)
 }
 
-extension TweeToken : Equatable {
-    // Kinda lame that we have to do this
-    func isEqual(_ t : TweeToken) -> Bool {
-        switch (self, t) {
-        case (.Newline(let line), .Newline(let line2)):
-            return line == line2
-        case (.Passage(let name, let tags, let position), .Passage(let name2, let tags2, let position2)):
-            return name == name2 && tags == tags2 && position == position2
-        case (.Text(let text), .Text(let text2)):
-            return text == text2
-        case (.Link(let passage, let title), .Link(let passage2, let title2)):
-            return passage == passage2 && title == title2
-        case (.Macro(let name, let expr), .Macro(let name2, let expr2)):
-            return name == name2 && expr == expr2
-        case (.Comment(let comment), .Comment(let comment2)):
-            return comment == comment2
-        default:
-            return false
-        }
+// Kinda lame that we have to do this
+func ==(lhs: TweeToken, rhs: TweeToken) -> Bool {
+    switch (lhs, rhs) {
+    case (.Newline(let line), .Newline(let line2)):
+        return line == line2
+    case (.Passage(let name, let tags, let position), .Passage(let name2, let tags2, let position2)):
+        return name == name2 && tags == tags2 && position == position2
+    case (.Text(let text), .Text(let text2)):
+        return text == text2
+    case (.Link(let passage, let title), .Link(let passage2, let title2)):
+        return passage == passage2 && title == title2
+    case (.Macro(let name, let expr), .Macro(let name2, let expr2)):
+        return name == name2 && expr == expr2
+    case (.Comment(let comment), .Comment(let comment2)):
+        return comment == comment2
+    default:
+        return false
     }
 }
 
-func ==(lhs: TweeToken, rhs: TweeToken) -> Bool {
-    return lhs.isEqual(rhs)
-}
+class TweeLexer {
+    // MARK: Private Definitions
 
-private let passageHeaderRegex = try! NSRegularExpression(pattern:
-    """
+    private let passageHeaderRegex = try! NSRegularExpression(pattern:
+        """
         ^\\s*                       (?# ignore whitespace at beginning of line )
 
         (?:                         (?# -- passage header -- )
@@ -61,19 +58,17 @@ private let passageHeaderRegex = try! NSRegularExpression(pattern:
         )
     """, options: .allowCommentsAndWhitespace)
 
-private let bracketsCharacterSet = CharacterSet(charactersIn: "[</")
-
-
-class TweeLexer {
-    let macroNameCharacters = CharacterSet.letters.union(CharacterSet(charactersIn: "/="))
+    private let macroNameCharacters = CharacterSet.letters.union(CharacterSet(charactersIn: "/"))
     
-    enum LexerState : Equatable {
+    private enum LexerState : Equatable {
         case text
         case link
         case macro
         case comment
     }
 
+    // MARK: Public Interface
+    
     func lex(filename: String, block: @escaping (TweeToken, TweeLocation) -> Void) throws {
         let str = try String(contentsOfFile: filename, encoding: .utf8)
         lex(string: str, filename: filename, block: block)
@@ -170,8 +165,12 @@ class TweeLexer {
                                 } else {
                                     handleToken(.Macro(name: String(nameAndExpr[0]), expr: nil), location)
                                 }
+                            } else if macro.first == "=" {
+                                // macro like <<=$x>>, behaves similar to <<$x>> below, but with macro name "="
+                                let expr = String(macro.dropFirst())
+                                handleToken(.Macro(name: "=", expr: expr), location)
                             } else {
-                                // doesn't start with a macro name, so it's a raw expression
+                                // doesn't start with a macro name, so it's a raw expression like <<$x>>
                                 handleToken(.Macro(name: nil, expr: macro), location)
                             }
                             accText = ""

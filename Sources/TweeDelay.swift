@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TweeDelay : CustomStringConvertible {
+struct TweeDelay : Equatable, CustomStringConvertible {
     let string: String
     let seconds: Int
 
@@ -34,3 +34,9 @@ struct TweeDelay : CustomStringConvertible {
         return string
     }
 }
+
+func ==(lhs: TweeDelay, rhs: TweeDelay) -> Bool {
+    return lhs.string == rhs.string &&
+        lhs.seconds == rhs.seconds
+}
+

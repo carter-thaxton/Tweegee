@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct TweeError : Error, CustomStringConvertible, AsJson {
+struct TweeError : Error, Equatable, CustomStringConvertible, AsJson {
     let type : TweeErrorType
     let location : TweeLocation?
     let message : String
@@ -37,6 +37,13 @@ struct TweeError : Error, CustomStringConvertible, AsJson {
         }
     }
 }
+
+func ==(lhs: TweeError, rhs: TweeError) -> Bool {
+    return lhs.type == rhs.type &&
+        lhs.location == rhs.location &&
+        lhs.message == rhs.message
+}
+
 
 enum TweeErrorType : Equatable {
     case InvalidLinkSyntax
