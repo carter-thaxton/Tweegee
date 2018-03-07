@@ -108,28 +108,17 @@ class TweeEngineTests: XCTestCase {
         let maxActions = 100
         var result = [TweeAction]()
 
-        loop: repeat {
+        repeat {
             let action = engine.getNextAction()
             result.append(action)
 
             let choice = block(action)
-
-            switch action {
-            case .Choice:
-                if choice == nil {
-                    XCTFail("Must make a choice when action is choice")
-                } else {
-                    engine.makeChoice(choice!)
-                }
-
-            case .End, .Error:
-                break loop
-
-            default:
-                if choice != nil {
-                    XCTFail("Cannot make a choice unless action is choice: \(action)")
-                }
+            if choice != nil {
+                engine.makeChoice(choice!)
             }
+
+            if case .End = action { break }
+            if case .Error = action { break }
         } while result.count < maxActions
 
         XCTAssert(result.count < maxActions, "Reached \(result.count) actions without finishing story")
