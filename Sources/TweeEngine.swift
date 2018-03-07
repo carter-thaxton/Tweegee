@@ -25,6 +25,7 @@ class TweeEngine {
     var currentBlock : TweeCodeBlock? = nil
     var currentStatementIndex : Int = -1
     var currentLine : String = ""
+    var awaitingChoice : Bool = false
     
     var nestedBlocks = [NestedBlock]()
     var isNested : Bool { return !nestedBlocks.isEmpty }
@@ -51,6 +52,7 @@ class TweeEngine {
         currentBlock = nil
         currentStatementIndex = -1
         currentLine = ""
+        awaitingChoice = false
         variables = [:]
         nestedBlocks = []
 
@@ -59,7 +61,10 @@ class TweeEngine {
         }
     }
 
-    func getNextAction() -> TweeAction {
+    func getNextAction() throws -> TweeAction {
+        if awaitingChoice {
+            throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Awaiting a choice, use makeChoice to select an option")
+        }
         let maxStatementsPerAction = 100  // prevent runaway interpreter
         do {
             var count = 0
@@ -71,17 +76,26 @@ class TweeEngine {
                 count += 1
             } while count < maxStatementsPerAction
             // runaway interpreter, should never reach here
-            return .Error(error: TweeError(type: .UnknownError, location: nil, message: "Interpreter reached \(count) statements without an action"))
+            throw TweeError(type: .RuntimeError, location: nil, message: "Interpreter reached \(count) statements without an action")
         } catch let error as TweeError {
-            return .Error(error: error)
+            throw error
         } catch {
             // should never reach here, but handle it with a catch-all nonetheless
-            return .Error(error: TweeError(type: .UnknownError, location: nil, message: "\(error)"))
+            throw TweeError(type: .UnknownError, location: nil, message: "\(error)")
         }
     }
-    
-    func makeChoice(_ choice: TweeChoice) {
-        
+
+    func makeChoice(_ choice: TweeChoice) throws {
+        if !awaitingChoice {
+            throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Cannot make choice unless waiting for a choice")
+        }
+        if let passage = story.passagesByName[choice.name] {
+            awaitingChoice = false
+            gotoPassage(passage)
+        } else {
+            throw TweeError(type: .MissingPassage, location: currentStatement?.location,
+                        message: "Choice refers to passage named '\(choice.name)' but no passage exists with that name")
+        }
     }
 
     // MARK: Private Implementation
@@ -132,17 +146,16 @@ class TweeEngine {
     }
     
     private func interpretStatement(_ stmt: TweeStatement) throws -> TweeAction? {
-        var result : TweeAction? = nil
         switch stmt {
         case let textStmt as TweeTextStatement:
             currentLine += textStmt.text
             
         case is TweeNewlineStatement:
-            currentLine = currentLine.trimmingWhitespace()
-            if !currentLine.isEmpty {
-                result = .Message(text: currentLine)
-            }
+            let text = currentLine.trimmingWhitespace()
             currentLine = ""
+            if !text.isEmpty {
+                return .Message(text: text)
+            }
             
         case let setStmt as TweeSetStatement:
             let value = try eval(setStmt.expression) as Any
@@ -180,6 +193,14 @@ class TweeEngine {
                                 message: "Link refers to passage named '\(passageName)' but no passage exists with that name")
             }
 
+        case let choiceStmt as TweeChoiceStatement:
+            let choices : [TweeChoice] = try choiceStmt.choices.map() { choice in
+                let passageName = choice.isDynamic ? try eval(choice.expression!) as String : choice.passage!
+                return TweeChoice(name: passageName, title: choice.title ?? passageName)
+            }
+            awaitingChoice = true
+            return TweeAction.Choice(choices: choices)
+            
         case let ifStmt as TweeIfStatement:
             // pick first clause that has either no condition (else) or evaluates to true
             let clause = try ifStmt.clauses.first { c in
@@ -191,10 +212,10 @@ class TweeEngine {
             }
             
         default:
-            throw TweeError(type: .UnknownError, location: stmt.location, message: "Unrecognized statement type: \(stmt)")
+            throw TweeError(type: .RuntimeError, location: stmt.location, message: "Unrecognized statement type: \(stmt)")
         }
         
-        return result
+        return nil
     }
     
     private func eval<T>(_ expression: TweeExpression) throws -> T {

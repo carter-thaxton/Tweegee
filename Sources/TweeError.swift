@@ -66,5 +66,6 @@ enum TweeErrorType : Equatable {
     case InvalidTwee2Settings
     case MissingPassage
     case UnreferencedPassage
+    case RuntimeError
 }
 

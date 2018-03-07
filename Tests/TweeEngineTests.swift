@@ -87,6 +87,45 @@ class TweeEngineTests: XCTestCase {
         ])
     }
     
+    func testChoice() {
+        let result = interpret("""
+            ::Start
+            What next?
+            [[Pick me]] | [[Not this]]
+
+            ::Pick me
+            Correct!
+            [[Maybe?|maybe]] | [[Definitely!|definitely]]
+
+            ::Not this
+            No!!!
+
+            ::maybe
+            Wrong
+
+            ::definitely
+            Yes!
+            <<choice [[Right|theend]]>> | <<choice [["Really?" what's up?|whatsup]]>>
+
+            ::theend
+            All good
+
+            ::whatsup
+            No!!!
+        """, choose: ["Pick me", "definitely", "theend"])
+        
+        checkActions(result, [
+            .Message(text: "What next?"),
+            .Choice(choices: [TweeChoice(name: "Pick me", title: "Pick me"), TweeChoice(name: "Not this", title: "Not this")]),
+            .Message(text: "Correct!"),
+            .Choice(choices: [TweeChoice(name: "maybe", title: "Maybe?"), TweeChoice(name: "definitely", title: "Definitely!")]),
+            .Message(text: "Yes!"),
+            .Choice(choices: [TweeChoice(name: "theend", title: "Right"), TweeChoice(name: "whatsup", title: "\"Really?\" what's up?")]),
+            .Message(text: "All good"),
+            .End
+            ])
+    }
+    
     // MARK: Helper methods
     
     func parse(_ string : String) -> TweeStory {
@@ -98,34 +137,46 @@ class TweeEngineTests: XCTestCase {
     
     typealias Interpreter = (TweeAction) -> TweeChoice?
     
-    func interpret(_ string : String, block: Interpreter = { _ in nil } ) -> [TweeAction] {
+    func interpret(_ string : String, choose: [String] = []) -> [TweeAction] {
         let story = parse(string)
         let engine = TweeEngine(story: story)
-        return interpret(engine: engine, block: block)
+        return interpret(engine: engine, choose: choose)
     }
 
-    func interpret(engine: TweeEngine, block: Interpreter = { _ in nil } ) -> [TweeAction] {
+    func interpret(engine: TweeEngine, choose: [String] = []) -> [TweeAction] {
         let maxActions = 100
         var result = [TweeAction]()
+        var chooseIndex = 0
 
-        repeat {
-            let action = engine.getNextAction()
-            result.append(action)
+        do {
+            repeat {
+                let action = try engine.getNextAction()
+                result.append(action)
+                
+                // handle choice
+                if case .Choice(choices: let choices) = action {
+                    XCTAssert(chooseIndex < choose.count, "Reached an unexpected choice: \(choices)")
+                    let name = choose[chooseIndex]
+                    if let choice = choices.first(where: { $0.name == name }) {
+                        try engine.makeChoice(choice)
+                        chooseIndex += 1
+                    } else {
+                        XCTFail("Did not find choice named '\(name)' in the available choices: \(choices)")
+                    }
+                }
 
-            let choice = block(action)
-            if choice != nil {
-                engine.makeChoice(choice!)
-            }
+                if case .End = action { break }
+            } while result.count < maxActions
 
-            if case .End = action { break }
-            if case .Error = action { break }
-        } while result.count < maxActions
-
-        XCTAssert(result.count < maxActions, "Reached \(result.count) actions without finishing story")
+            XCTAssert(result.count < maxActions, "Reached \(result.count) actions without finishing story")
+            XCTAssertEqual(chooseIndex, choose.count, "Did not use all provided choices")
+        } catch {
+            XCTFail("TweeEngine failed with: \(error)")
+        }
         
         return result
     }
-    
+
     func checkActions(_ actual: [TweeAction], _ expected: [TweeAction]) {
         for i in 0..<min(actual.count, expected.count) {
             let a = actual[i]
