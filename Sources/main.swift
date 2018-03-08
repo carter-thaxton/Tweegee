@@ -108,8 +108,8 @@ func playGame(story: TweeStory) throws {
             if let name = promptForChoice(choices) {
                 try engine.makeChoice(name: name)
             } else {
-                print("EOF while waiting for choice")
-                exit(1)
+                // EOF while waiting for choice
+                return
             }
             
         case .End:
