@@ -23,7 +23,7 @@ class TweeLexerTests: XCTestCase {
             // Comment is ignored
             """,
         tokens: [
-            .Passage(name: "Start", tags: ["tag", "tag2"], position: CGPoint(x: 5, y: 25)),
+            .Passage(name: "Start", tags: ["tag", "tag2"], posX: 5, posY: 25),
             .Newline(":: Start [tag tag2] <5,25>"),
             .Text("Some normal text"),
             .Newline("Some normal text"),
@@ -69,7 +69,7 @@ class TweeLexerTests: XCTestCase {
             Text // then a comment
             """,
         tokens: [
-            .Passage(name: "Start", tags: [], position: nil),
+            .Passage(name: "Start", tags: [], posX: nil, posY: nil),
             .Newline("::Start"),
             .Text("Some normal text"),
             .Newline("Some normal text"),

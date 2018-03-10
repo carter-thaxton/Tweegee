@@ -84,14 +84,16 @@ protocol NestableStatement {
 
 class TweePassage : TweeStatement, NestableStatement {
     let name : String
-    let position : CGPoint?
+    let posX : Int?
+    let posY : Int?
     let tags : [String]
     let block = TweeCodeBlock()
     var rawTwee = [String]()
 
-    init(location: TweeLocation, name: String, position: CGPoint?, tags: [String]) {
+    init(location: TweeLocation, name: String, posX: Int?, posY: Int?, tags: [String]) {
         self.name = name
-        self.position = position
+        self.posX = posX
+        self.posY = posY
         self.tags = tags
         super.init(location: location)
     }

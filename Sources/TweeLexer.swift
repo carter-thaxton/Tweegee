@@ -10,7 +10,7 @@ import Foundation
 
 enum TweeToken : Equatable {
     case Newline(String)
-    case Passage(name: String, tags: [String], position: CGPoint?)
+    case Passage(name: String, tags: [String], posX: Int?, posY: Int?)
     case Text(String)
     case Link(passage: String, title: String?)
     case Macro(name: String?, expr: String?)
@@ -23,8 +23,8 @@ func ==(lhs: TweeToken, rhs: TweeToken) -> Bool {
     switch (lhs, rhs) {
     case (.Newline(let line), .Newline(let line2)):
         return line == line2
-    case (.Passage(let name, let tags, let position), .Passage(let name2, let tags2, let position2)):
-        return name == name2 && tags == tags2 && position == position2
+    case (.Passage(let name, let tags, let posX, let posY), .Passage(let name2, let tags2, let posX2, let posY2)):
+        return name == name2 && tags == tags2 && posX == posX2 && posY == posY2
     case (.Text(let text), .Text(let text2)):
         return text == text2
     case (.Link(let passage, let title), .Link(let passage2, let title2)):
@@ -93,14 +93,16 @@ class TweeLexer {
             
             let tagsArr = tags?.components(separatedBy: .whitespaces).filter {!$0.isEmpty} ?? []
             
-            var pos : CGPoint?
+            var posX : Int?
+            var posY : Int?
             if posx != nil && posy != nil {
-                pos = CGPoint(x: Int(posx!)!, y: Int(posy!)!)
+                posX = Int(posx!)
+                posY = Int(posy!)
             }
 
             location.passage = name  // keep track of most recent passage name in location
             location.passageLineNumber = 0  // and line number within passage
-            handleToken(.Passage(name: name, tags: tagsArr, position: pos), location)
+            handleToken(.Passage(name: name, tags: tagsArr, posX: posX, posY: posY), location)
         } else {
             let text = line.trimmingWhitespace()
             if !text.isEmpty {

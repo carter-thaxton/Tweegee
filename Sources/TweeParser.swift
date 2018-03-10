@@ -240,12 +240,12 @@ class TweeParser {
             case .Error(let type, let message):
                 throw TweeError(type: type, location: location, message: message)
 
-            case .Passage(let name, let tags, let position):
+            case .Passage(let name, let tags, let posX, let posY):
                 trimTrailingEmptyLinesOfRawTwee()
                 ensureNoOpenStatements()
                 resetPassage()
 
-                currentPassage = TweePassage(location: location, name: name, position: position, tags: tags)
+                currentPassage = TweePassage(location: location, name: name, posX: posX, posY: posY, tags: tags)
                 currentStatements.append(currentPassage!)
                 let existing = story.addPassage(passage: currentPassage!)
                 
