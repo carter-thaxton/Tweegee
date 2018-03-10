@@ -67,6 +67,8 @@ class TweeLexerTests: XCTestCase {
                 [[go_here]]
             <<endif>>
             Text // then a comment
+            [[Allow << and >> in link|link]]
+            <<macro "Allow [[ and ]] in macro">>
             """,
         tokens: [
             .Passage(name: "Start", tags: [], posX: nil, posY: nil),
@@ -108,6 +110,12 @@ class TweeLexerTests: XCTestCase {
             .Text("Text"),
             .Comment("then a comment"),
             .Newline("Text // then a comment"),
+            
+            .Link(passage: "link", title: "Allow << and >> in link"),
+            .Newline("[[Allow << and >> in link|link]]"),
+
+            .Macro(name: "macro", expr: "\"Allow [[ and ]] in macro\""),
+            .Newline("<<macro \"Allow [[ and ]] in macro\">>"),
         ])
     }
     
