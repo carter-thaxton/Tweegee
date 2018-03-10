@@ -17,7 +17,7 @@ protocol AsJson {
 
 func toJsonString(_ data: Any) throws -> String {
     var opts : JSONSerialization.WritingOptions = [.prettyPrinted]
-    if #available(macOS 10.13, *) {
+    if #available(macOS 10.13, iOS 11.0, *) {
         opts.formUnion(.sortedKeys)
     }
     let serialized = try JSONSerialization.data(withJSONObject: data, options: opts)
