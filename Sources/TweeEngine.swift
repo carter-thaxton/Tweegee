@@ -85,6 +85,17 @@ class TweeEngine {
         }
     }
 
+    func makeChoice(index: Int) throws {
+        if currentChoices.isEmpty {
+            throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Cannot make choice unless waiting for a choice")
+        } else if index < 0 {
+            throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Invalid choice index \(index).  Index cannot be negative")
+        } else if index >= currentChoices.count {
+            throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Invalid choice index \(index).  Only \(currentChoices.count) choices are available")
+        }
+        try makeChoice(name: currentChoices[index].name)
+    }
+
     func makeChoice(name: String) throws {
         if currentChoices.isEmpty {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Cannot make choice unless waiting for a choice")
