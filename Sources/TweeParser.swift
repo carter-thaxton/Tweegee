@@ -310,7 +310,9 @@ class TweeParser {
 
             case .Macro(let name, let expr):
                 try ensureCodeBlock()
-                startImplicitChoiceIfAfterLink()
+                if name != "choice" {
+                    endImplicitChoice()  // complex choices must be implemented with an explicit choice
+                }
                 if name == nil || name == "=" || name == "print" {
                     // raw expression used in macro (or one of the various print macros)
                     let expression = try parse(expression: expr, location: location, for: "exprStmt")
@@ -469,7 +471,6 @@ class TweeParser {
             if expr != nil {
                 throw TweeError(type: .UnexpectedExpression, location: location, message: "Unexpected expression in else")
             }
-            endImplicitChoice()  // NOTE: else can cause the end of an implicit choice
             guard let ifStmt = currentStatement as? TweeIfStatement else {
                 throw TweeError(type: .UnmatchedIf, location: location, message: "Found else without corresponding if")
             }
@@ -484,7 +485,6 @@ class TweeParser {
                 throw TweeError(type: .MissingExpression, location: location, message: "Missing expression for elseif")
             }
             let cond = try parse(expression: expr, location: location, for: "elseif")
-            endImplicitChoice()  // NOTE: elseif can cause the end of an implicit choice
             guard let ifStmt = currentStatement as? TweeIfStatement else {
                 throw TweeError(type: .UnmatchedIf, location: location, message: "Found elseif without corresponding if")
             }
@@ -498,7 +498,6 @@ class TweeParser {
             if expr != nil {
                 throw TweeError(type: .UnexpectedExpression, location: location, message: "Unexpected expression in endif")
             }
-            endImplicitChoice()  // NOTE: endif can cause the end of an implicit choice
             if !(currentStatement is TweeIfStatement) {
                 throw TweeError(type: .UnmatchedIf, location: location, message: "Found endif without corresponding if")
             }
@@ -566,7 +565,7 @@ class TweeParser {
             case .ExplicitChoice:
                 throw TweeError(type: .InvalidChoiceSyntax, location: location, message: "choice may not be nested inside another choice")
             default:
-                break  // ok
+                break  // all others ok
             }
             
             if expr != nil {
