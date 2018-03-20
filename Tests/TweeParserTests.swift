@@ -474,6 +474,9 @@ class TweeParserTests: XCTestCase {
             ::ImplicitChoiceWithIf
             [[choice1]] | <<if $x>>[[choice2]]<<else>>[[choice3]]<<endif>>
 
+            ::ImplicitChoiceWithIf2
+            [[choice1]] | <<if $x>>[[choice2]]<<else>>[[choice3]]<<endif>> | [[choice4]]
+
             ::ExplicitChoiceWithIf
             <<choice>>
                 <<if $x>>
@@ -495,10 +498,9 @@ class TweeParserTests: XCTestCase {
             <<choice [[Single Choice|choice1]]>>
 
             ::choice1
-
             ::choice2
-
             ::choice3
+            ::choice4
         """, ignoreErrors: [.UnreferencedPassage])
         
         checkCodeForPassage(story, "ImplicitChoices", "C(LL)")
@@ -506,6 +508,7 @@ class TweeParserTests: XCTestCase {
         checkCodeForPassage(story, "MixedChoiceSyntax1", "C(LL)")
         checkCodeForPassage(story, "MixedChoiceSyntax2", "C(LL)")
         checkCodeForPassage(story, "ImplicitChoiceWithIf", "C(LI(L:L))")
+        checkCodeForPassage(story, "ImplicitChoiceWithIf2", "C(LI(L:L)L)")
         checkCodeForPassage(story, "ExplicitChoiceWithIf", "C(I(L:L)L)")
         checkCodeForPassage(story, "SingleImplicitChoice", "C(L)")
         checkCodeForPassage(story, "SingleExplicitChoice", "C(L)")
