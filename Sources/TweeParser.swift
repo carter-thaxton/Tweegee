@@ -386,10 +386,11 @@ class TweeParser {
 
     private func endImplicitChoice() {
         if case .ImplicitChoice = parserState {
-            let stmt = currentStatements.popLast()
-            assert(stmt is TweeChoiceStatement)
+            if currentStatement is TweeChoiceStatement {
+                _ = currentStatements.popLast()
+                parserState = .Passage
+            }
             // TODO: handle unmatched statements, like endif
-            parserState = .Passage
         }
     }
 
@@ -468,6 +469,7 @@ class TweeParser {
             if expr != nil {
                 throw TweeError(type: .UnexpectedExpression, location: location, message: "Unexpected expression in else")
             }
+            endImplicitChoice()  // NOTE: else can cause the end of an implicit choice
             guard let ifStmt = currentStatement as? TweeIfStatement else {
                 throw TweeError(type: .UnmatchedIf, location: location, message: "Found else without corresponding if")
             }
@@ -482,6 +484,7 @@ class TweeParser {
                 throw TweeError(type: .MissingExpression, location: location, message: "Missing expression for elseif")
             }
             let cond = try parse(expression: expr, location: location, for: "elseif")
+            endImplicitChoice()  // NOTE: elseif can cause the end of an implicit choice
             guard let ifStmt = currentStatement as? TweeIfStatement else {
                 throw TweeError(type: .UnmatchedIf, location: location, message: "Found elseif without corresponding if")
             }
@@ -495,6 +498,7 @@ class TweeParser {
             if expr != nil {
                 throw TweeError(type: .UnexpectedExpression, location: location, message: "Unexpected expression in endif")
             }
+            endImplicitChoice()  // NOTE: endif can cause the end of an implicit choice
             if !(currentStatement is TweeIfStatement) {
                 throw TweeError(type: .UnmatchedIf, location: location, message: "Found endif without corresponding if")
             }
