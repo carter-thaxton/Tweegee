@@ -86,8 +86,6 @@ class TweeStory : AsJson {
         visit() { (stmt) in
             if let link = stmt as? TweeLinkStatement {  // This will also get includes
                 result.append(link)
-            } else if let choice = stmt as? TweeChoiceStatement {
-                result.append(contentsOf: choice.choices)
             }
         }
         return result

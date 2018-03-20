@@ -104,7 +104,7 @@ class TweeParserTests: XCTestCase {
         XCTAssertEqual(story.startPassage!.name, "Start")
         XCTAssert(story.passagesInOrder[0] === story.startPassage)
 
-        checkCodeForPassage(story, "Start", "C")
+        checkCodeForPassage(story, "Start", "C(LL)")
         checkCodeForPassage(story, "Passage1", "TN")
         checkCodeForPassage(story, "Passage2", "TN")
     }
@@ -175,7 +175,7 @@ class TweeParserTests: XCTestCase {
     func testTextOutsidePassage() {
         checkParserFails("""
             Some text
-        """, expectedError: .TextOutsidePassage, lineNumber: 1)
+        """, expectedError: .UnexpectedText, lineNumber: 1)
     }
     
     func testBadLexInParser() {
@@ -192,7 +192,7 @@ class TweeParserTests: XCTestCase {
             ::Start
             Some text
             <<if true>>
-        """, expectedError: .MissingEndIf, lineNumber: 3)
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
     }
 
     func testUnmatchedIfAtPassage() {
@@ -202,7 +202,7 @@ class TweeParserTests: XCTestCase {
             <<if true>>
 
             ::NextPassage
-        """, expectedError: .MissingEndIf, lineNumber: 3)
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
     }
     
     func testUnmatchedIfWithElseIf() {
@@ -211,7 +211,7 @@ class TweeParserTests: XCTestCase {
             Some text
             <<if true>>
             <<elseif true>>
-        """, expectedError: .MissingEndIf, lineNumber: 3)
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
     }
     
     func testUnmatchedIfWithElseIfAndElse() {
@@ -221,7 +221,7 @@ class TweeParserTests: XCTestCase {
             <<if true>>
             <<elseif true>>
             <<else>>
-        """, expectedError: .MissingEndIf, lineNumber: 3)
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
     }
     
     func testUnmatchedElse() {
@@ -229,7 +229,7 @@ class TweeParserTests: XCTestCase {
             ::Start
             Some text
             <<else>>
-        """, expectedError: .MissingIf, lineNumber: 3)
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
     }
 
     func testUnmatchedEndIf() {
@@ -237,7 +237,7 @@ class TweeParserTests: XCTestCase {
             ::Start
             Some text
             <<endif>>
-        """, expectedError: .MissingIf, lineNumber: 3)
+        """, expectedError: .UnmatchedIf, lineNumber: 3)
     }
 
     func testDuplicateElse() {
@@ -325,7 +325,7 @@ class TweeParserTests: XCTestCase {
             ::Start
             I see <<silently>>nothing should be here
             It should fail without endsilently
-        """, expectedError: .MissingEndSilently)
+        """, expectedError: .UnmatchedSilently)
     }
     
     func testInclude() {
@@ -439,51 +439,59 @@ class TweeParserTests: XCTestCase {
     func testChoiceSyntax() {
         let story = parse("""
             ::Start
-            Some text
+            <<set $x = true>>
 
-            ::ChoicesAsLinks
+            ::ImplicitChoices
             [[choice1]] | [[Choice 2|choice2]]
 
-            ::ChoicesAsMacros
+            ::EmbeddedChoices
             <<choice [[choice1]]>> | <<choice [[Choice 2|choice2]]>>
 
-            ::ChoicesMixed1
+            ::MixedChoiceSyntax1
             <<choice [[choice1]]>> | [[Choice 2|choice2]]
 
-            ::ChoicesMixed2
+            ::MixedChoiceSyntax2
             [[choice1]] | <<choice [[Choice 2|choice2]]>>
+
+            ::ImplicitChoiceWithIf
+            [[choice1]] | <<if $x>>[[choice2]]<<else>>[[choice3]]<<endif>>
+
+            ::ExplicitChoiceWithIf
+            <<choice>>
+                <<if $x>>
+                    [[choice1]]
+                <<else>>
+                    [[choice2]]
+                <<endif>>
+                [[choice3]]
+            <<endchoice>>
+
+            ::SingleImplicitChoice
+            // any text after a link causes a single choice
+            [[Single Choice|choice1]] +
+
+            ::SingleExplicitChoice
+            <<choice>>[[Single Choice|choice1]]<<endchoice>>
+
+            ::SingleEmbeddedChoice
+            <<choice [[Single Choice|choice1]]>>
 
             ::choice1
 
             ::choice2
+
+            ::choice3
         """, ignoreErrors: [.UnreferencedPassage])
         
-        func checkTwoChoices(_ name: String) {
-            guard let passage = story.passagesByName[name] else {
-                return XCTFail("No passage named \(name)")
-            }
-
-            let stmts = passage.block.statements
-            XCTAssertEqual(stmts.count, 1)
-            
-            guard let choice = stmts.first as? TweeChoiceStatement else {
-                return XCTFail("No choice statement")
-            }
-            XCTAssertEqual(choice.choices.count, 2)
-
-            let link1 = choice.choices[0]
-            XCTAssertEqual(link1.passage, "choice1")
-            XCTAssertNil(link1.title)
-
-            let link2 = choice.choices[1]
-            XCTAssertEqual(link2.passage, "choice2")
-            XCTAssertEqual(link2.title, "Choice 2")
-        }
-
-        checkTwoChoices("ChoicesAsLinks")
-        checkTwoChoices("ChoicesAsMacros")
-        checkTwoChoices("ChoicesMixed1")
-        checkTwoChoices("ChoicesMixed2")
+        checkCodeForPassage(story, "ImplicitChoices", "C(LL)")
+        checkCodeForPassage(story, "EmbeddedChoices", "C(LL)")
+        checkCodeForPassage(story, "MixedChoiceSyntax1", "C(LL)")
+        checkCodeForPassage(story, "MixedChoiceSyntax2", "C(LL)")
+        checkCodeForPassage(story, "ImplicitChoiceWithIf", "C(LI(L:L))")
+        checkCodeForPassage(story, "ExplicitChoiceWithIf", "C(I(L:L)L)")
+        checkCodeForPassage(story, "SingleImplicitChoice", "C(L)")
+        checkCodeForPassage(story, "SingleExplicitChoice", "C(L)")
+        checkCodeForPassage(story, "SingleEmbeddedChoice", "C(L)")
     }
     
     func testInvalidChoice() {
@@ -544,14 +552,15 @@ class TweeParserTests: XCTestCase {
         guard let passage = story.passagesByName[passageName] else {
             return XCTFail("Did not find passage named \(passageName)")
         }
-        let actual = codeBlockToPattern(passage.block)
-        XCTAssertEqual(actual, pattern)
+        let actual = passage.block.toPattern()
+        XCTAssertEqual(actual, pattern, "Expected: \(pattern), got: \(actual) for passage: \(passageName)")
     }
+}
 
-    // Creates a pattern like "STNTNI(S,TN:TNTN)"
-    func codeBlockToPattern(_ block: TweeCodeBlock) -> String {
+extension TweeCodeBlock {
+    func toPattern() -> String {
         var result = ""
-        for stmt in block.statements {
+        for stmt in self.statements {
             switch stmt {
             case is TweeNewlineStatement:
                 result += "N"
@@ -565,11 +574,13 @@ class TweeParserTests: XCTestCase {
                 result += "U"
             case is TweeLinkStatement:
                 result += "L"
-            case is TweeChoiceStatement:
-                result += "C"
+            case let choiceStmt as TweeChoiceStatement:
+                result += "C("
+                result += choiceStmt.block.toPattern()
+                result += ")"
             case let delayStmt as TweeDelayStatement:
                 result += "D("
-                result += codeBlockToPattern(delayStmt.block)
+                result += delayStmt.block.toPattern()
                 result += ")"
             case let ifStmt as TweeIfStatement:
                 result += "I("
@@ -579,7 +590,7 @@ class TweeParserTests: XCTestCase {
                     } else if index > 0 {
                         result += ","  // elseif
                     }
-                    result += codeBlockToPattern(clause.block)
+                    result += clause.block.toPattern()
                 }
                 result += ")"
             default:
@@ -588,5 +599,4 @@ class TweeParserTests: XCTestCase {
         }
         return result
     }
-    
 }

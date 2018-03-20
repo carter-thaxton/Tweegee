@@ -186,15 +186,16 @@ class TweeIncludeStatement : TweeLinkStatement {
     }
 }
 
-class TweeChoiceStatement : TweeStatement {
-    var choices = [TweeLinkStatement]()
+class TweeChoiceStatement : TweeStatement, NestableStatement {
+    let block = TweeCodeBlock()
     
     override func asJson() -> Dict {
-        var links = DictArr()
-        for choice in choices {
-            links.append(choice.asJson())
-        }
-        return ["_type": "choice", "line": location.passageLineNumber, "choices": links]
+        return ["_type": "choice", "line": location.passageLineNumber, "statements": block.asJson()]
+    }
+
+    override func visit(fn: (TweeStatement) -> Void) {
+        super.visit(fn: fn)
+        block.visit(fn: fn)
     }
 }
 

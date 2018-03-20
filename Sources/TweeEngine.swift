@@ -26,6 +26,7 @@ class TweeEngine {
     var currentStatementIndex : Int = -1
     var currentLine : String = ""
     var currentChoices = [TweeChoice]()
+    var currentChoiceStmt : TweeChoiceStatement? = nil
 
     var nestedBlocks = [NestedBlock]()
     var isNested : Bool { return !nestedBlocks.isEmpty }
@@ -53,6 +54,7 @@ class TweeEngine {
         currentStatementIndex = -1
         currentLine = ""
         currentChoices = []
+        currentChoiceStmt = nil
         variables = [:]
         nestedBlocks = []
 
@@ -65,6 +67,7 @@ class TweeEngine {
         if !currentChoices.isEmpty {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Awaiting a choice, use makeChoice to select an option")
         }
+        
         let maxStatementsPerAction = 100  // prevent runaway interpreter
         do {
             var count = 0
@@ -120,6 +123,7 @@ class TweeEngine {
         currentPassage = passage
         currentBlock = passage.block
         currentStatementIndex = 0
+        currentChoiceStmt = nil
         currentLine = ""
     }
     
@@ -147,8 +151,6 @@ class TweeEngine {
 
     // return an action, or nil if we should continue
     private func interpretNextStatement() throws -> TweeAction? {
-        // TODO: check not awaiting choice
-        
         if let stmt = currentStatement {
             currentStatementIndex += 1
             return try interpretStatement(stmt)
@@ -202,23 +204,28 @@ class TweeEngine {
         case let linkStmt as TweeLinkStatement:
             let passageName = linkStmt.isDynamic ? try eval(linkStmt.expression!) as String : linkStmt.passage!
             if let passage = story.passagesByName[passageName] {
-                gotoPassage(passage)
+                if currentChoiceStmt == nil {
+                    gotoPassage(passage)
+                } else {
+                    currentChoices.append(TweeChoice(name: passageName, title: linkStmt.title ?? passageName))
+                }
             } else {
                 throw TweeError(type: .MissingPassage, location: stmt.location,
                                 message: "Link refers to passage named '\(passageName)' but no passage exists with that name")
             }
 
         case let choiceStmt as TweeChoiceStatement:
-            let choices : [TweeChoice] = try choiceStmt.choices.map() { choice in
-                let passageName = choice.isDynamic ? try eval(choice.expression!) as String : choice.passage!
-                guard story.passagesByName[passageName] != nil else {
-                    throw TweeError(type: .MissingPassage, location: stmt.location,
-                                message: "Choice refers to passage named '\(passageName)' but no passage exists with that name")
-                }
-                return TweeChoice(name: passageName, title: choice.title ?? passageName)
+            // TODO: check to make sure currentLine is already empty
+            currentLine = ""
+            currentChoices.removeAll()
+            currentChoiceStmt = choiceStmt
+            pushBlock(choiceStmt.block) {
+                // TODO: check to make sure currentLine is already empty
+                // TODO: check to make sure there is at least one choice
+                self.currentLine = ""
+                self.currentChoiceStmt = nil
+                return TweeAction.Choice(choices: self.currentChoices)
             }
-            currentChoices = choices
-            return TweeAction.Choice(choices: choices)
 
         case let ifStmt as TweeIfStatement:
             // pick first clause that has either no condition (else) or evaluates to true
