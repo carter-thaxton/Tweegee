@@ -387,6 +387,24 @@ class TweeParserTests: XCTestCase {
         XCTAssert(linkStmt.expression!.variables.contains("$next"))
     }
     
+    func testDynamicLinkInsideIf() {
+        let story = parse("""
+            :: Start
+            <<if $played>>
+                <<set $played = false>>
+                Want to go again?
+                [[Yes!|Start]] | [[No.|finished]]
+                <<else>>
+                <<set $song = either("001song","002song","003song","004song","005song","006song","007song","008song","009song","010song")>>
+                [[$song]]
+            <<endif>>
+
+            ::finished
+        """)
+        
+        checkCodeForPassage(story, "Start", "I(STNC(LL):SL)")
+    }
+    
     func testUndefinedVariableInLink() {
         checkParserFails("""
             ::Start

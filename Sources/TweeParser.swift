@@ -386,9 +386,10 @@ class TweeParser {
 
     private func endImplicitChoice() {
         if case .ImplicitChoice = parserState {
-            let _ = currentStatements.popLast()
-//            assert(stmt is TweeChoiceStatement)
+            let stmt = currentStatements.popLast()
+            assert(stmt is TweeChoiceStatement)
             // TODO: handle unmatched statements, like endif
+            parserState = .Passage
         }
     }
 

@@ -1,4 +1,5 @@
 :: Start <10,10>
+<<set $mentionqueen = false>>
 [[start_playlist]]
 
 
@@ -49,7 +50,7 @@ Want to go again?
 
 :: check_shuffle <453,148>
 <<if $played>>
-<<set $song_count ++>>
+<<set $song_count = $song_count + 1>>
 <<endif>>
 <<if $song_count >= 20>>
 [[out_of_songs]]
@@ -72,7 +73,7 @@ Talk to you after a while.
 [[after_nap]]
 
 
-:: 001song <595,20>
+:: 001song [noreferror] <595,20>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -91,7 +92,7 @@ This is just a gorgeous song. Minus, you know, the dying.
 [[check_shuffle]]
 
 
-:: 011song <595,148>
+:: 011song [noreferror] <595,148>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -114,7 +115,7 @@ They're probably happening right now.
 [[check_shuffle]]
 
 
-:: 002song <734,22>
+:: 002song [noreferror] <734,22>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -136,7 +137,7 @@ If that line wasn't written SPECIFICALLY about T2, I'll eat my helmet.
 [[check_shuffle]]
 
 
-:: 003song <869,22>
+:: 003song [noreferror] <869,22>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -158,7 +159,7 @@ Thanks for that, Wilco.
 [[check_shuffle]]
 
 
-:: 004song <1005,21>
+:: 004song [noreferror] <1005,21>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -177,7 +178,7 @@ And so, so homesick.
 [[check_shuffle]]
 
 
-:: 005song <1140,19>
+:: 005song [noreferror] <1140,19>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -200,7 +201,7 @@ Just to be sure... that they know.
 [[check_shuffle]]
 
 
-:: 006song <1281,19>
+:: 006song [noreferror] <1281,19>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -218,7 +219,7 @@ WHO KNEW that Marilyn Manson wouldn't be the best pick for cheering me up?
 [[check_shuffle]]
 
 
-:: 007song <1419,18>
+:: 007song [noreferror] <1419,18>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -242,7 +243,7 @@ What is it about outer space that leads people to write such bummer songs?
 [[check_shuffle]]
 
 
-:: 008song <1556,18>
+:: 008song [noreferror] <1556,18>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -260,7 +261,7 @@ It'd be nice if that were anywhere CLOSE to the truth...
 [[check_shuffle]]
 
 
-:: 009song <1692,18>
+:: 009song [noreferror] <1692,18>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -280,7 +281,7 @@ I'm just going to let this one wash over me as I drift across the universe.
 [[check_shuffle]]
 
 
-:: 010song <1827,18>
+:: 010song [noreferror] <1827,18>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -311,7 +312,7 @@ it really can be "Beautiful!"
 [[check_shuffle]]
 
 
-:: 012song <734,157>
+:: 012song [noreferror] <734,157>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -333,7 +334,7 @@ Man... for a song with only three verses, this one doesn't mince words, does it?
 [[check_shuffle]]
 
 
-:: 013song <869,160>
+:: 013song [noreferror] <869,160>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -356,7 +357,7 @@ Maybe there's a lesson for me in there, somewhere.
 [[check_shuffle]]
 
 
-:: 014song <1007,160>
+:: 014song [noreferror] <1007,160>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -377,7 +378,7 @@ But, yeah, beyond that, it's really a pretty kick-ass song. I dig it.
 [[check_shuffle]]
 
 
-:: 015song <1141,160>
+:: 015song [noreferror] <1141,160>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -403,7 +404,7 @@ I DON'T THINK THAT'S A WORD, YOU GUYS.
 [[check_shuffle]]
 
 
-:: 016song <1281,161>
+:: 016song [noreferror] <1281,161>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -424,7 +425,7 @@ Man... why do the bad guys always get the best theme music?
 [[check_shuffle]]
 
 
-:: 017song <1420,162>
+:: 017song [noreferror] <1420,162>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -444,7 +445,7 @@ Like he says in the song, as you get older (and see what being an astronaut is r
 [[check_shuffle]]
 
 
-:: 018song <1556,162>
+:: 018song [noreferror] <1556,162>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -466,7 +467,7 @@ I WOULD EAT THAT ENTIRE SPACE STATION.
 [[check_shuffle]]
 
 
-:: 019song <1693,161>
+:: 019song [noreferror] <1693,161>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -487,7 +488,7 @@ Check the liner notes on this album, would you? See whether he mentions that.
 [[check_shuffle]]
 
 
-:: 020song <1831,161>
+:: 020song [noreferror] <1831,161>
 <<if visited() > 1>>
 <<set $played = false>>
 <<else>>
@@ -521,7 +522,7 @@ I'm just gonna listen to the rest of this song, and try to pull myself together.
 
 
 :: after_nap <313,281>
-<<gameover>>
+// <<gameover>>
 
 
 
