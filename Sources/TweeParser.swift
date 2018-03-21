@@ -14,6 +14,7 @@ class TweeParser {
         case Passage
         case PassageAfterLink
         case Delay
+        case Prompt
         case ImplicitChoice
         case ExplicitChoice
         case Error
@@ -208,6 +209,9 @@ class TweeParser {
             case is TweeChoiceStatement:
                 story.errors.append(TweeError(type: .UnmatchedChoice, location: stmt.location, message: "Passage ended without closing endchoice"))
                 
+            case is TweePromptStatement:
+                story.errors.append(TweeError(type: .UnmatchedPrompt, location: stmt.location, message: "Passage ended without closing endprompt"))
+                
             default:
                 fatalError("Unexpected type of open statement: \(stmt)")
             }
@@ -279,12 +283,6 @@ class TweeParser {
 
             case .Newline:
                 switch parserState {
-                case .Delay where lineHasText:
-                    throw TweeError(type: .InvalidDelaySyntax, location: location, message: "No newlines allowed inside of delay")
-                
-                case .ExplicitChoice where lineHasText:
-                    throw TweeError(type: .InvalidChoiceSyntax, location: location, message: "No newlines allowed inside of choice")
-
                 case .ImplicitChoice:
                     endImplicitChoice()
                 
@@ -303,10 +301,10 @@ class TweeParser {
                 startImplicitChoiceIfAfterLink()
                 try parseText(text: text, location: location)
 
-            case .Link(let passage, let title):
+            case .Link(let passage, let text):
                 try ensureCodeBlock()
                 startImplicitChoiceIfAfterLink()
-                try parseLink(passage: passage, title: title, location: location)
+                try parseLink(passage: passage, text: text, location: location)
 
             case .Macro(let name, let expr):
                 try ensureCodeBlock()
@@ -332,6 +330,9 @@ class TweeParser {
                     case "choice", "endchoice", "/choice":
                         try parseChoice(name: name!, expr: expr, location: location)
 
+                    case "prompt", "endprompt", "/prompt":
+                        try parsePrompt(name: name!, expr: expr, location: location)
+                        
                     case "include", "display":
                         try parseInclude(expr: expr, location: location)
                         
@@ -406,19 +407,19 @@ class TweeParser {
         }
     }
     
-    private func parseLink(passage: String, title: String?, location: TweeLocation) throws {
+    private func parseLink(passage: String, text: String?, location: TweeLocation) throws {
         let linkStmt : TweeLinkStatement
         if passage.starts(with: "$") {
             // link uses a dynamic expression
             let expression = try parse(expression: passage, location: location, for: "link")
-            linkStmt = TweeLinkStatement(location: location, expression: expression, title: title)
+            linkStmt = TweeLinkStatement(location: location, expression: expression, text: text)
         } else {
-            linkStmt = TweeLinkStatement(location: location, passage: passage, title: title)
+            linkStmt = TweeLinkStatement(location: location, passage: passage, text: text)
         }
 
-        // if link has a title like "delay 10m", then insert an empty delay before following the link
+        // if link has text like "delay 10m", then insert an empty delay before following the link
         let delayStmt : TweeDelayStatement?
-        if let delayMatch = title?.match(pattern: "^delay\\s+(\\w+)$") {
+        if let delayMatch = text?.match(pattern: "^delay\\s+(\\w+)$") {
             let delayStr = delayMatch[1]!
             guard let delay = TweeDelay(fromString: delayStr) else {
                 throw TweeError(type: .InvalidDelaySyntax, location: location, message: "Invalid expression for delay: \(delayStr)")
@@ -426,8 +427,8 @@ class TweeParser {
             
             delayStmt = TweeDelayStatement(location: location, delay: delay)
             
-            // don't use any title for the link
-            linkStmt.title = nil
+            // don't use any text for the link
+            linkStmt.text = nil
         } else {
             delayStmt = nil
         }
@@ -518,11 +519,12 @@ class TweeParser {
             guard let delay = TweeDelay(fromString: delayExpr) else {
                 throw TweeError(type: .InvalidDelaySyntax, location: location, message: "Invalid expression for delay: \(delayExpr)")
             }
-            let stmt = TweeDelayStatement(location: location, delay: delay)
             endLineOfText(location: location)  // end any text before delay
+            let stmt = TweeDelayStatement(location: location, delay: delay)
             currentCodeBlock!.add(stmt)
             currentStatements.append(stmt)
             assert(currentCodeBlock === stmt.block)
+            parserState = .Delay
 
         case "enddelay", "/delay":
             if expr != nil {
@@ -533,6 +535,7 @@ class TweeParser {
             }
             _ = currentStatements.popLast()
             lineHasText = false  // don't need a newline, unless some text appears after enddelay
+            parserState = .Passage
 
         default:
             fatalError("Unexpected macro for delay: \(name)")
@@ -562,6 +565,8 @@ class TweeParser {
             switch parserState {
             case .Delay:
                 throw TweeError(type: .InvalidChoiceSyntax, location: location, message: "choice not allowed inside of delay")
+            case .Prompt:
+                throw TweeError(type: .InvalidChoiceSyntax, location: location, message: "choice not allowed inside of prompt")
             case .ExplicitChoice:
                 throw TweeError(type: .InvalidChoiceSyntax, location: location, message: "choice may not be nested inside another choice")
             default:
@@ -602,8 +607,8 @@ class TweeParser {
                 }
             } else {
                 // = Explicit Choice =
-                let stmt = TweeChoiceStatement(location: location)
                 endLineOfText(location: location)  // end any text before choice
+                let stmt = TweeChoiceStatement(location: location)
                 currentCodeBlock!.add(stmt)
                 currentStatements.append(stmt)
                 assert(currentCodeBlock === stmt.block)
@@ -616,12 +621,53 @@ class TweeParser {
             }
             _ = currentStatements.popLast()
             lineHasText = false  // don't need a newline, unless some text appears after endchoice
-            
+            parserState = .Passage
+
         default:
             fatalError("Unexpected macro for choice: \(name)")
         }
     }
 
+    private func parsePrompt(name: String, expr: String?, location: TweeLocation) throws {
+        switch name {
+        case "prompt":
+            if expr != nil {
+                throw TweeError(type: .UnexpectedExpression, location: location, message: "Unexpected expression in prompt")
+            }
+
+            // check state
+            switch parserState {
+            case .Delay:
+                throw TweeError(type: .InvalidPromptSyntax, location: location, message: "prompt not allowed inside of delay")
+            case .ExplicitChoice:
+                throw TweeError(type: .InvalidPromptSyntax, location: location, message: "prompt not allowed inside of choice")
+            default:
+                break  // all others ok
+            }
+
+            endLineOfText(location: location)  // end any text before prompt
+            let stmt = TweePromptStatement(location: location)
+            currentCodeBlock!.add(stmt)
+            currentStatements.append(stmt)
+            assert(currentCodeBlock === stmt.block)
+            parserState = .Prompt
+            
+        case "endprompt", "/prompt":
+            if expr != nil {
+                throw TweeError(type: .UnexpectedExpression, location: location, message: "Unexpected expression in endprompt")
+            }
+            if !(currentStatement is TweePromptStatement) {
+                throw TweeError(type: .UnmatchedPrompt, location: location, message: "Found endprompt without corresponding prompt")
+            }
+            _ = currentStatements.popLast()
+            lineHasText = false  // don't need a newline, unless some text appears after endprompt
+            parserState = .Passage
+            
+        default:
+            fatalError("Unexpected macro for prompt: \(name)")
+        }
+    }
+    
     private func parseInclude(expr: String?, location: TweeLocation) throws {
         guard let expr = expr else {
             throw TweeError(type: .MissingExpression, location: location, message: "No passage given for include")

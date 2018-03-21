@@ -52,10 +52,12 @@ enum TweeErrorType : Equatable {
     case InvalidMacroSyntax
     case InvalidChoiceSyntax
     case InvalidDelaySyntax
+    case InvalidPromptSyntax
     case UnmatchedIf
     case UnmatchedSilently
     case UnmatchedDelay
     case UnmatchedChoice
+    case UnmatchedPrompt
     case DuplicateElse
     case DuplicatePassageName
     case UnexpectedExpression

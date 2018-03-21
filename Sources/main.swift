@@ -105,10 +105,17 @@ func playGame(story: TweeStory) throws {
             print("\(text) - (\(delay))")
 
         case .Choice(let choices):
-            if let name = promptForChoice(choices) {
-                try engine.makeChoice(name: name)
+            if let passage = promptForChoice(choices) {
+                try engine.makeChoice(passage: passage)
             } else {
                 // EOF while waiting for choice
+                return
+            }
+        
+        case .Prompt(let text):
+            print(text)
+            if !prompt() {
+                // EOF while waiting for prompt
                 return
             }
             
@@ -120,17 +127,23 @@ func playGame(story: TweeStory) throws {
 
 func promptForChoice(_ choices: [TweeChoice]) -> String? {
     while true {
-        let choiceString = choices.enumerated().map({ i,c in return "[\(i+1): \(c.title)]" }).joined(separator: " ")
+        let choiceString = choices.enumerated().map({ i,c in return "[\(i+1): \(c.text)]" }).joined(separator: " ")
         print("Choose: \(choiceString)")
 
         guard let response = readLine() else { return nil }
         if let index = Int(response) {
             if index > 0 && index <= choices.count {
-                return choices[index-1].name
+                return choices[index-1].passage
             }
         }
         print("Bad choice.")
     }
+}
+
+func prompt() -> Bool {
+    print("Press enter to continue:")
+    let result = readLine()
+    return result != nil
 }
 
 // MARK: Run program

@@ -32,7 +32,7 @@ class TweeLexerTests: XCTestCase {
             .Text("<i>Track 1 -- \"Ladies And Gentlemen We Are Floating In Space\" by Spiritualized</i>"),
             .Newline("<i>Track 1 -- \"Ladies And Gentlemen We Are Floating In Space\" by Spiritualized</i>"),
             .Text("Text "),
-            .Link(passage: "link", title: nil),
+            .Link(passage: "link", text: nil),
             .Text(" text"),
             .Newline("Text [[link]] text"),
             .Macro(name: "set", expr: "$i = 5"),
@@ -47,9 +47,9 @@ class TweeLexerTests: XCTestCase {
             .Text("No items"),
             .Macro(name: "endif", expr: nil),
             .Newline("<<if $i > 0 >>I have <<$i>> items and costs <<3 * $i>> dollars<<else>>No items<<endif>>"),
-            .Link(passage: "choice_1", title: "Choice 1"),
+            .Link(passage: "choice_1", text: "Choice 1"),
             .Text(" | "),
-            .Link(passage: "choice_2", title: "Choice 2"),
+            .Link(passage: "choice_2", text: "Choice 2"),
             .Newline("[[Choice 1|choice_1]] | [[ Choice 2 | choice_2 ]]"),
             .Comment("Comment is ignored"),
             .Newline("// Comment is ignored"),
@@ -101,7 +101,7 @@ class TweeLexerTests: XCTestCase {
             .Comment("whitespace before comment ignored"),
             .Newline("<<else>>   // whitespace before comment ignored"),
             
-            .Link(passage: "go_here", title: nil),
+            .Link(passage: "go_here", text: nil),
             .Newline("    [[go_here]]"),
 
             .Macro(name: "endif", expr: nil),
@@ -111,7 +111,7 @@ class TweeLexerTests: XCTestCase {
             .Comment("then a comment"),
             .Newline("Text // then a comment"),
             
-            .Link(passage: "link", title: "Allow << and >> in link"),
+            .Link(passage: "link", text: "Allow << and >> in link"),
             .Newline("[[Allow << and >> in link|link]]"),
 
             .Macro(name: "macro", expr: "\"Allow [[ and ]] in macro\""),

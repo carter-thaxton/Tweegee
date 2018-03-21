@@ -12,7 +12,7 @@ enum TweeToken : Equatable {
     case Newline(String)
     case Passage(name: String, tags: [String], posX: Int?, posY: Int?)
     case Text(String)
-    case Link(passage: String, title: String?)
+    case Link(passage: String, text: String?)
     case Macro(name: String?, expr: String?)
     case Comment(String)
     case Error(type: TweeErrorType, message: String)
@@ -27,8 +27,8 @@ func ==(lhs: TweeToken, rhs: TweeToken) -> Bool {
         return name == name2 && tags == tags2 && posX == posX2 && posY == posY2
     case (.Text(let text), .Text(let text2)):
         return text == text2
-    case (.Link(let passage, let title), .Link(let passage2, let title2)):
-        return passage == passage2 && title == title2
+    case (.Link(let passage, let text), .Link(let passage2, let text2)):
+        return passage == passage2 && text == text2
     case (.Macro(let name, let expr), .Macro(let name2, let expr2)):
         return name == name2 && expr == expr2
     case (.Comment(let comment), .Comment(let comment2)):
@@ -133,11 +133,11 @@ class TweeLexer {
                         case (.link, "]", "]"):
                             // end link
                             // split on pipe, and trim each component
-                            let passageAndTitle = accText.components(separatedBy: "|").map { $0.trimmingWhitespace() }
-                            if passageAndTitle.count == 2 {
-                                handleToken(.Link(passage: passageAndTitle[1], title: passageAndTitle[0]), location)
-                            } else if passageAndTitle.count == 1 {
-                                handleToken(.Link(passage: passageAndTitle[0], title: nil), location)
+                            let passageAndText = accText.components(separatedBy: "|").map { $0.trimmingWhitespace() }
+                            if passageAndText.count == 2 {
+                                handleToken(.Link(passage: passageAndText[1], text: passageAndText[0]), location)
+                            } else if passageAndText.count == 1 {
+                                handleToken(.Link(passage: passageAndText[0], text: nil), location)
                             } else {
                                 return handleToken(.Error(type: .InvalidLinkSyntax, message: "Invalid link syntax.  Too many | symbols"), location)
                             }

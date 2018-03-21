@@ -116,16 +116,32 @@ class TweeEngineTests: XCTestCase {
         
         checkActions(result, [
             .Message(text: "What next?"),
-            .Choice(choices: [TweeChoice(name: "Pick me", title: "Pick me"), TweeChoice(name: "Not this", title: "Not this")]),
+            .Choice(choices: [TweeChoice(passage: "Pick me", text: "Pick me"), TweeChoice(passage: "Not this", text: "Not this")]),
             .Message(text: "Correct!"),
-            .Choice(choices: [TweeChoice(name: "maybe", title: "Maybe?"), TweeChoice(name: "definitely", title: "Definitely!")]),
+            .Choice(choices: [TweeChoice(passage: "maybe", text: "Maybe?"), TweeChoice(passage: "definitely", text: "Definitely!")]),
             .Message(text: "Yes!"),
-            .Choice(choices: [TweeChoice(name: "theend", title: "Right"), TweeChoice(name: "whatsup", title: "\"Really?\" what's up?")]),
+            .Choice(choices: [TweeChoice(passage: "theend", text: "Right"), TweeChoice(passage: "whatsup", text: "\"Really?\" what's up?")]),
             .Message(text: "All good"),
             .End
-            ])
+        ])
     }
     
+    func testPrompt() {
+        let result = interpret("""
+            ::Start
+            Say something
+            <<prompt>>Click me<<endprompt>>
+            Then something else
+        """)
+
+        checkActions(result, [
+            .Message(text: "Say something"),
+            .Prompt(text: "Click me"),
+            .Message(text: "Then something else"),
+            .End
+        ])
+    }
+        
     // MARK: Helper methods
     
     func parse(_ string : String) -> TweeStory {
@@ -156,8 +172,8 @@ class TweeEngineTests: XCTestCase {
                 // handle choice
                 if case .Choice(choices: let choices) = action {
                     XCTAssert(chooseIndex < choose.count, "Reached an unexpected choice: \(choices)")
-                    let name = choose[chooseIndex]
-                    try engine.makeChoice(name: name)
+                    let passage = choose[chooseIndex]
+                    try engine.makeChoice(passage: passage)
                     chooseIndex += 1
                 }
 

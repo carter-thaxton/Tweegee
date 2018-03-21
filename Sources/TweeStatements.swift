@@ -140,29 +140,29 @@ class TweeTextStatement : TweeStatement {
 class TweeLinkStatement : TweeStatement {
     let passage : String?
     let expression : TweeExpression?
-    var title : String?
+    var text : String?
 
     var isDynamic : Bool { return expression != nil }
 
-    init(location: TweeLocation, passage: String, title: String?) {
+    init(location: TweeLocation, passage: String, text: String?) {
         self.passage = passage
         self.expression = nil
-        self.title = title
+        self.text = text
         super.init(location: location)
     }
     
-    init(location: TweeLocation, expression: TweeExpression, title: String? = nil) {
+    init(location: TweeLocation, expression: TweeExpression, text: String? = nil) {
         self.passage = nil
         self.expression = expression
-        self.title = title
+        self.text = text
         super.init(location: location)
     }
     
     override func asJson() -> Dict {
         if isDynamic {
-            return ["_type": "link", "line": location.passageLineNumber, "expression": expression!.string, "title": title ?? NSNull()]
+            return ["_type": "link", "line": location.passageLineNumber, "expression": expression!.string, "text": text ?? NSNull()]
         } else {
-            return ["_type": "link", "line": location.passageLineNumber, "passage": passage!, "title": title ?? NSNull()]
+            return ["_type": "link", "line": location.passageLineNumber, "passage": passage!, "text": text ?? NSNull()]
         }
     }
 }
@@ -170,11 +170,11 @@ class TweeLinkStatement : TweeStatement {
 // Treat includes as a type of link statement
 class TweeIncludeStatement : TweeLinkStatement {
     init(location: TweeLocation, passage: String) {
-        super.init(location: location, passage: passage, title: nil)
+        super.init(location: location, passage: passage, text: nil)
     }
     
     init(location: TweeLocation, expression: TweeExpression) {
-        super.init(location: location, expression: expression, title: nil)
+        super.init(location: location, expression: expression, text: nil)
     }
 
     override func asJson() -> Dict {
@@ -193,6 +193,19 @@ class TweeChoiceStatement : TweeStatement, NestableStatement {
         return ["_type": "choice", "line": location.passageLineNumber, "statements": block.asJson()]
     }
 
+    override func visit(fn: (TweeStatement) -> Void) {
+        super.visit(fn: fn)
+        block.visit(fn: fn)
+    }
+}
+
+class TweePromptStatement : TweeStatement, NestableStatement {
+    let block = TweeCodeBlock()
+
+    override func asJson() -> Dict {
+        return ["_type": "prompt", "line": location.passageLineNumber, "statements": block.asJson()]
+    }
+    
     override func visit(fn: (TweeStatement) -> Void) {
         super.visit(fn: fn)
         block.visit(fn: fn)

@@ -12,6 +12,7 @@ enum TweeAction : Equatable {
     case Message(text: String)
     case Choice(choices: [TweeChoice])
     case Delay(text: String, delay: TweeDelay)
+    case Prompt(text: String)
     case End
 }
 
@@ -23,6 +24,8 @@ func ==(lhs: TweeAction, rhs: TweeAction) -> Bool {
         return choices == choices2
     case (.Delay(let text, let delay), .Delay(let text2, let delay2)):
         return text == text2 && delay == delay2
+    case (.Prompt(let text), .Prompt(let text2)):
+        return text == text2
     case (.End, .End):
         return true
     default:
@@ -31,12 +34,12 @@ func ==(lhs: TweeAction, rhs: TweeAction) -> Bool {
 }
 
 struct TweeChoice : Equatable {
-    let name: String
-    let title: String
+    let passage: String
+    let text: String
 }
 
 func ==(lhs: TweeChoice, rhs: TweeChoice) -> Bool {
-    return lhs.name == rhs.name &&
-        lhs.title == rhs.title
+    return lhs.text == rhs.text &&
+        lhs.passage == rhs.passage
 }
 

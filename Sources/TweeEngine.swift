@@ -10,7 +10,7 @@ import Foundation
 
 class TweeEngine {
     // MARK: Nested block structure
-    typealias BlockCallback = () -> TweeAction?
+    typealias BlockCallback = () throws -> TweeAction?
     struct NestedBlock {
         let block: TweeCodeBlock
         let statementIndex: Int
@@ -96,23 +96,23 @@ class TweeEngine {
         } else if index >= currentChoices.count {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Invalid choice index \(index).  Only \(currentChoices.count) choices are available")
         }
-        try makeChoice(name: currentChoices[index].name)
+        try makeChoice(passage: currentChoices[index].passage)
     }
 
-    func makeChoice(name: String) throws {
+    func makeChoice(passage: String) throws {
         if currentChoices.isEmpty {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location, message: "Cannot make choice unless waiting for a choice")
         }
-        let availableChoiceNames = currentChoices.map {$0.name}
-        if !availableChoiceNames.contains(name) {
+        let availableChoicePassages = currentChoices.map {$0.passage}
+        if !availableChoicePassages.contains(passage) {
             throw TweeError(type: .RuntimeError, location: currentStatement?.location,
-                            message: "Invalid choice: \(name).  Available choices are: \(availableChoiceNames)")
+                            message: "Invalid choice: \(passage).  Available choices are: \(availableChoicePassages)")
         }
-        if let passage = story.passagesByName[name] {
+        if let p = story.passagesByName[passage] {
             currentChoices = []
-            gotoPassage(passage)
+            gotoPassage(p)
         } else {
-            fatalError("Choice made available for passage named: \(name) but no passage exists with that name")
+            fatalError("Choice made available for passage named: \(passage) but no passage exists with that name")
         }
     }
 
@@ -156,7 +156,7 @@ class TweeEngine {
             return try interpretStatement(stmt)
         } else if isNested {
             let callback = popBlock()
-            return callback?()
+            return try callback?()
         } else {
             return .End
         }
@@ -207,7 +207,7 @@ class TweeEngine {
                 if currentChoiceStmt == nil {
                     gotoPassage(passage)
                 } else {
-                    currentChoices.append(TweeChoice(name: passageName, title: linkStmt.title ?? passageName))
+                    currentChoices.append(TweeChoice(passage: passageName, text: linkStmt.text ?? passageName))
                 }
             } else {
                 throw TweeError(type: .MissingPassage, location: stmt.location,
@@ -220,11 +220,22 @@ class TweeEngine {
             currentChoices.removeAll()
             currentChoiceStmt = choiceStmt
             pushBlock(choiceStmt.block) {
+                if self.currentChoices.isEmpty {
+                    throw TweeError(type: .RuntimeError, location: choiceStmt.location, message: "Choice does not contain any links")
+                }
                 // TODO: check to make sure currentLine is already empty
-                // TODO: check to make sure there is at least one choice
                 self.currentLine = ""
                 self.currentChoiceStmt = nil
                 return TweeAction.Choice(choices: self.currentChoices)
+            }
+        
+        case let promptStmt as TweePromptStatement:
+            // TODO: check to make sure currentLine is already empty
+            currentLine = ""
+            pushBlock(promptStmt.block) {
+                let text = self.currentLine.trimmingWhitespace()
+                self.currentLine = ""
+                return TweeAction.Prompt(text: text)
             }
 
         case let ifStmt as TweeIfStatement:

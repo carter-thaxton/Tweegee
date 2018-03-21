@@ -514,6 +514,17 @@ class TweeParserTests: XCTestCase {
         """, expectedError: .InvalidChoiceSyntax, lineNumber: 3)
     }
     
+    func testPromptStatement() {
+        let story = parse("""
+            ::Start
+            Text
+            <<prompt>>Click me<<endprompt>>
+            More text
+        """)
+        
+        checkCodeForPassage(story, "Start", "TNP(T)TN")
+    }
+    
     func testExpressionStatements() {
         let story = parse("""
             ::Start
@@ -593,6 +604,10 @@ extension TweeCodeBlock {
             case let delayStmt as TweeDelayStatement:
                 result += "D("
                 result += delayStmt.block.toPattern()
+                result += ")"
+            case let promptStmt as TweePromptStatement:
+                result += "P("
+                result += promptStmt.block.toPattern()
                 result += ")"
             case let ifStmt as TweeIfStatement:
                 result += "I("

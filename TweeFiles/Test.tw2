@@ -3,14 +3,19 @@ Test Syntax
 
 ::Start
 <<set $a = 0>>
-<<include "showA">>
+<<set $show = 'showA'>>
+[[Begin]]
+
+::Begin
+<<include $show>>
 Next is delay:
+<<prompt>>Ready?<<endprompt>>
 <<delay "5m">><<if $a is 0>>A is zero<<else>>A is <<$a>><<endif>><<enddelay>>
 Make a choice:
 [[Choose A|choiceA]] | [[Choose B|choiceB]]
 
 ::choiceA
-<<delay "10m">><<set $a = 1>>Setting a to 1: <<include "showA">><<enddelay>>
+<<delay "10m">><<set $a = 1>>Setting a to 1: <<include $show>><<enddelay>>
 Done waiting
 [[nextphase]]
 
@@ -21,14 +26,23 @@ Setting a to 2
 
 ::nextphase
 You win!
-<<include "showA">>
-[[The End]] | [[Back to Start|Start]]
+<<include $show>>
+[[The End]] | [[Back to Start|Begin]] | [[Go dynamic|Dynamic]]
 
 ::The End [end] <421,622>
 Game over!
 
 ::showA
 A = <<$a>>
+
+::showB [noreferror]
+Drum roll please...
+<<include "showA">>
+Ta da!
+
+::Dynamic
+<<set $show = "showB">>
+[[Begin]]
 
 ::Twee2Settings
 @story_start_name = 'Start'
