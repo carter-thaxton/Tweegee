@@ -336,6 +336,9 @@ class TweeParser {
                     case "include", "display":
                         try parseInclude(expr: expr, location: location)
                         
+                    case "rewind":
+                        try parseRewind(expr: expr, location: location)
+                        
                     case "silently":
                         silently = true
 
@@ -679,6 +682,21 @@ class TweeParser {
         } else {
             let passage = expr.trimmingCharacters(in: "\"'")
             stmt = TweeIncludeStatement(location: location, passage: passage)
+        }
+        currentCodeBlock!.add(stmt)
+    }
+
+    private func parseRewind(expr: String?, location: TweeLocation) throws {
+        guard let expr = expr else {
+            throw TweeError(type: .MissingExpression, location: location, message: "No passage given for rewind")
+        }
+        let stmt : TweeRewindStatement
+        if expr.starts(with: "$") {  // Good enough.  Could support more elaborate syntax if necessary
+            let expression = try parse(expression: expr, location: location, for: "rewind")
+            stmt = TweeRewindStatement(location: location, expression: expression)
+        } else {
+            let passage = expr.trimmingCharacters(in: "\"'")
+            stmt = TweeRewindStatement(location: location, passage: passage)
         }
         currentCodeBlock!.add(stmt)
     }

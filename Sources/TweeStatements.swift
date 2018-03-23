@@ -186,6 +186,25 @@ class TweeIncludeStatement : TweeLinkStatement {
     }
 }
 
+// Treat rewind as a type of link statement
+class TweeRewindStatement : TweeLinkStatement {
+    init(location: TweeLocation, passage: String) {
+        super.init(location: location, passage: passage, text: nil)
+    }
+    
+    init(location: TweeLocation, expression: TweeExpression) {
+        super.init(location: location, expression: expression, text: nil)
+    }
+
+    override func asJson() -> Dict {
+        if isDynamic {
+            return ["_type": "rewind", "line": location.passageLineNumber, "expression": expression!.string]
+        } else {
+            return ["_type": "rewind", "line": location.passageLineNumber, "passage": passage!]
+        }
+    }
+}
+
 class TweeChoiceStatement : TweeStatement, NestableStatement {
     let block = TweeCodeBlock()
     

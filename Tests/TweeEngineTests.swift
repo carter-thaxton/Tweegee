@@ -142,6 +142,22 @@ class TweeEngineTests: XCTestCase {
         ])
     }
         
+    func testRewind() {
+        let result = interpret("""
+            ::Start
+            Say something
+            <<rewind "Start">>
+            Then this
+        """)
+        
+        checkActions(result, [
+            .Message(text: "Say something"),
+            .Rewind(passage: "Start"),
+            .Message(text: "Then this"),
+            .End
+            ])
+    }
+    
     // MARK: Helper methods
     
     func parse(_ string : String) -> TweeStory {

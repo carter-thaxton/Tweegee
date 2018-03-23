@@ -525,6 +525,17 @@ class TweeParserTests: XCTestCase {
         checkCodeForPassage(story, "Start", "TNP(T)TN")
     }
     
+    func testRewindStatement() {
+        let story = parse("""
+            ::Start
+            Text
+            <<rewind "Start">>
+            More text
+        """)
+        
+        checkCodeForPassage(story, "Start", "TNRTN")
+    }
+
     func testExpressionStatements() {
         let story = parse("""
             ::Start
@@ -595,6 +606,8 @@ extension TweeCodeBlock {
                 result += "E"
             case is TweeIncludeStatement:
                 result += "U"
+            case is TweeRewindStatement:
+                result += "R"
             case is TweeLinkStatement:
                 result += "L"
             case let choiceStmt as TweeChoiceStatement:

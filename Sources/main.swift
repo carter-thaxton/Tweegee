@@ -119,6 +119,9 @@ func playGame(story: TweeStory) throws {
                 return
             }
             
+        case .Rewind(let passage):
+            print("<<< Rewind to: \(passage) <<<")
+
         case .End:
             return
         }

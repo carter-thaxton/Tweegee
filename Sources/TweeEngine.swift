@@ -192,6 +192,7 @@ class TweeEngine {
                 return TweeAction.Delay(text: text, delay: delayStmt.delay)
             }
             
+        // Note, must check for subtypes of TweeLinkStatement first
         case let includeStmt as TweeIncludeStatement:
             let passageName = includeStmt.isDynamic ? try eval(includeStmt.expression!) as String : includeStmt.passage!
             if let passage = story.passagesByName[passageName] {
@@ -201,6 +202,16 @@ class TweeEngine {
                                 message: "Include refers to passage named '\(passageName)' but no passage exists with that name")
             }
             
+        case let rewindStmt as TweeRewindStatement:
+            let passageName = rewindStmt.isDynamic ? try eval(rewindStmt.expression!) as String : rewindStmt.passage!
+            if story.passagesByName[passageName] != nil {
+                // TODO: check history to ensure it's possible to rewind
+                return TweeAction.Rewind(passage: passageName)
+            } else {
+                throw TweeError(type: .MissingPassage, location: stmt.location,
+                                message: "Rewind refers to passage named '\(passageName)' but no passage exists with that name")
+            }
+
         case let linkStmt as TweeLinkStatement:
             let passageName = linkStmt.isDynamic ? try eval(linkStmt.expression!) as String : linkStmt.passage!
             if let passage = story.passagesByName[passageName] {

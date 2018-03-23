@@ -13,6 +13,7 @@ enum TweeAction : Equatable {
     case Choice(choices: [TweeChoice])
     case Delay(text: String, delay: TweeDelay)
     case Prompt(text: String)
+    case Rewind(passage: String)
     case End
 }
 
@@ -26,6 +27,8 @@ func ==(lhs: TweeAction, rhs: TweeAction) -> Bool {
         return text == text2 && delay == delay2
     case (.Prompt(let text), .Prompt(let text2)):
         return text == text2
+    case (.Rewind(let passage), .Rewind(let passage2)):
+        return passage == passage2
     case (.End, .End):
         return true
     default:
