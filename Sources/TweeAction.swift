@@ -9,6 +9,7 @@
 import Foundation
 
 enum TweeAction : Equatable {
+    case Passage(passage: String)
     case Message(text: String)
     case Choice(choices: [TweeChoice])
     case Delay(text: String, delay: TweeDelay)
@@ -19,6 +20,8 @@ enum TweeAction : Equatable {
 
 func ==(lhs: TweeAction, rhs: TweeAction) -> Bool {
     switch (lhs, rhs) {
+    case (.Passage(let passage), .Passage(let passage2)):
+        return passage == passage2
     case (.Message(let text), .Message(let text2)):
         return text == text2
     case (.Choice(let choices), .Choice(let choices2)):
@@ -42,7 +45,5 @@ struct TweeChoice : Equatable {
 }
 
 func ==(lhs: TweeChoice, rhs: TweeChoice) -> Bool {
-    return lhs.text == rhs.text &&
-        lhs.passage == rhs.passage
+    return lhs.passage == rhs.passage && lhs.text == rhs.text
 }
-

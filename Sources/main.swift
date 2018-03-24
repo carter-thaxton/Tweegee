@@ -98,6 +98,10 @@ func playGame(story: TweeStory) throws {
     while true {
         let action = try engine.getNextAction()
         switch action {
+        case .Passage:
+            // ignore passage boundaries
+            break
+
         case .Message(let text):
             print(text)
 

@@ -34,8 +34,9 @@ class TweeEngine {
     var variables = [String:Any]()
 
     var currentStatement : TweeStatement? {
+        guard currentStatementIndex >= 0 else { return currentPassage }  // when statement index is -1, it refers to the passage itself
         guard let stmts = currentBlock?.statements else { return nil }
-        guard currentStatementIndex >= 0 && currentStatementIndex < stmts.count else { return nil }
+        guard currentStatementIndex < stmts.count else { return nil }
         return stmts[currentStatementIndex]
     }
 
@@ -122,12 +123,13 @@ class TweeEngine {
         // TODO: check to make sure currentLine is already empty
         currentPassage = passage
         currentBlock = passage.block
-        currentStatementIndex = 0
+        currentStatementIndex = -1
         currentChoiceStmt = nil
         currentLine = ""
     }
     
     private func includePassage(_ passage: TweePassage) {
+        // Note, do not output a passage action on includePassage, only on gotoPassage
         let returnToPassage = currentPassage
         pushBlock(passage.block) {
             self.currentPassage = returnToPassage
@@ -164,6 +166,9 @@ class TweeEngine {
     
     private func interpretStatement(_ stmt: TweeStatement) throws -> TweeAction? {
         switch stmt {
+        case let passageStmt as TweePassage:
+            return TweeAction.Passage(passage: passageStmt.name)
+            
         case let textStmt as TweeTextStatement:
             currentLine += textStmt.text
             

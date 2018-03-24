@@ -31,12 +31,17 @@ class TweeEngineTests: XCTestCase {
         """)
 
         checkActions(result, [
+            .Passage(passage: "Start"),
+            .Passage(passage: "Loop"),
             .Message(text: "X = 1"),
             .Message(text: "That's small"),
+            .Passage(passage: "Loop"),
             .Message(text: "X = 2"),
             .Message(text: "That's small"),
+            .Passage(passage: "Loop"),
             .Message(text: "X = 3"),
             .Message(text: "That's big"),
+            .Passage(passage: "Loop"),
             .Message(text: "X = 4"),
             .Message(text: "That's big"),
             .Message(text: "Done"),
@@ -56,8 +61,9 @@ class TweeEngineTests: XCTestCase {
             ::showX
             X = <<$x>>
         """)
-        
+
         checkActions(result, [
+            .Passage(passage: "Start"),
             .Message(text: "X = 1"),
             .Message(text: "X = 2"),
             .Message(text: "Done"),
@@ -78,10 +84,12 @@ class TweeEngineTests: XCTestCase {
         """)
         
         checkActions(result, [
+            .Passage(passage: "Start"),
             .Delay(text: "Twenty minutes", delay: TweeDelay(fromString: "20m")!),
             .Delay(text: "One hour", delay: TweeDelay(fromString: "1h")!),
             .Delay(text: "[Waiting]", delay: TweeDelay(fromString: "5s")!),
             .Delay(text: "[Waiting]", delay: TweeDelay(fromString: "10s")!),
+            .Passage(passage: "Next"),
             .Message(text: "After 10 seconds"),
             .End
         ])
@@ -115,12 +123,16 @@ class TweeEngineTests: XCTestCase {
         """, choose: ["Pick me", "definitely", "theend"])
         
         checkActions(result, [
+            .Passage(passage: "Start"),
             .Message(text: "What next?"),
             .Choice(choices: [TweeChoice(passage: "Pick me", text: "Pick me"), TweeChoice(passage: "Not this", text: "Not this")]),
+            .Passage(passage: "Pick me"),
             .Message(text: "Correct!"),
             .Choice(choices: [TweeChoice(passage: "maybe", text: "Maybe?"), TweeChoice(passage: "definitely", text: "Definitely!")]),
+            .Passage(passage: "definitely"),
             .Message(text: "Yes!"),
             .Choice(choices: [TweeChoice(passage: "theend", text: "Right"), TweeChoice(passage: "whatsup", text: "\"Really?\" what's up?")]),
+            .Passage(passage: "theend"),
             .Message(text: "All good"),
             .End
         ])
@@ -135,6 +147,7 @@ class TweeEngineTests: XCTestCase {
         """)
 
         checkActions(result, [
+            .Passage(passage: "Start"),
             .Message(text: "Say something"),
             .Prompt(text: "Click me"),
             .Message(text: "Then something else"),
@@ -151,6 +164,7 @@ class TweeEngineTests: XCTestCase {
         """)
         
         checkActions(result, [
+            .Passage(passage: "Start"),
             .Message(text: "Say something"),
             .Rewind(passage: "Start"),
             .Message(text: "Then this"),
