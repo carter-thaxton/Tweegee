@@ -27,14 +27,18 @@ Setting a to 2
 ::nextphase
 You win!
 <<include $show>>
-[[The End]] | [[Loop to Start|Begin]] | [[Rewind to Start|Rewind]] | [[Go dynamic|Dynamic]]
+[[The End]] | [[Loop to Begin|Begin]] | [[Rewind to Begin|RewindBegin]] | [[Rewind to Start|RewindStart]] | [[Go dynamic|Dynamic]]
 
 ::The End [end] <421,622>
 Game over!
 
-::Rewind
+::RewindBegin
 <<rewind "Begin">>
 [[Begin]]
+
+::RewindStart
+<<rewind "Start">>
+[[Start]]
 
 ::showA
 A = <<$a>>
