@@ -2,4 +2,5 @@
 /.build
 /Packages
 xcuserdata/
+xcshareddata/
 *.xcuserstate
